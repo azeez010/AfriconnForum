@@ -1,0 +1,234 @@
+{% extends "forum/base.html" %}
+{% block title %}advertise{% endblock %}
+{% block content %}
+
+{% if user.is_authenticated %}
+<h1>advertise page</h1>
+<span class="tweet-color">You have {{you.profile.afrika_deeds}} points</span>
+<a href="/your-ads/" class="tweet-color">See all your adverts</a>
+<p id="instruct">select the category your want</p>
+<form id="advertiseForm" action="/advertisement/" method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    <label for="advert_title">Title</label>
+    <input type="text" placeholder="e.g Dataslid Cards" name="advert_title" id="" required>
+    <br>
+    <br>
+    <label for="advert_url">website</label>
+    <input type="text" placeholder="e.g http://www.afrikaz.com" name="advert_url" id="" required>
+    <br>
+    <br>
+    <label for="advert_pic">advert</label>
+    <label for="details">details</label>
+    <br>
+    <textarea name="details" id="" cols="30" rows="10" required></textarea>
+    <br>
+    <label for="time">Duration</label>
+    <select name="time" id="time" required>
+        <option value="">-- choose --</option>
+        <option value="86400">a day</option>
+        <option value="259200">three days</option>
+        <option value="604800">a week</option>
+    </select>
+    <br>
+    <br>
+    <label for="country">country</label>
+    <select name="country" id="country" required>
+        <option value="">-- select --</option>
+        <option value="all {{no_of_users}}">all</option>
+        {% for each_country in countrystats %}
+                <option  value="{{each_country.country}} {{each_country.no_of_user}} {{no_of_users}}">{{each_country.country.name}}</option>
+        {% endfor %}
+    </select>
+    <br>
+    <br>
+    <label for="ad_type">Ad type</label>
+    <select name="ad_type" id="ad_type" required>
+        <option value="">-- select --</option>
+        <option value="all">all</option>
+        <option value="home">home page</option>
+        <option value="feeds">feeds</option>
+        <option value="hamlet">specific hamlet</option>
+    </select>
+    <br>
+    <br>
+    <div id="toggleHamlet">
+        <input type="text" placeholder="filter hamlet advertise in" id="filterAds">
+        <br>
+        <br>
+        <label for="option">category</label>
+        <select name="option" id="option">
+        </select>
+        <br>
+        <br>
+    </div>
+    <input type="file" name="advert_pic" accept="image/*" required>
+    <br>
+    <input id="button" type="submit" value="submit">
+</form>
+<script>
+var ad_type = "{{all.cost}}" 
+var time = 86400
+var total = 0
+var country = 1
+var totalUser = "{{no_of_users}}"
+var ad_rate = "{{ad_rate.cost}}"
+
+$("#country").change(function(){
+    let countryVal = $(this).val()
+    let countryValSplit = countryVal.split(" ")
+    country = countryValSplit[1] / totalUser
+    updatecost()
+})
+
+$("#ad_type").change(function(){
+    if($(this).val() == "hamlet"){
+        $("#toggleHamlet").css("display", "block")
+    }
+    else{
+        $("#toggleHamlet").css("display", "none")
+    }
+
+    if($(this).val() == "all"){
+        ad_type = "{{all.cost}}" 
+        total = ad_type * (time/86400) * country
+        if(!isNaN(total)){
+            $("#instruct").text(`this is going to cost you ${Math.ceil(total)} ADs`)
+        }
+        else{
+            $("#instruct").text(`select the category your want`)
+        }
+    }
+    else if($(this).val() == "feeds"){
+        ad_type = "{{feeds.cost}}" 
+        total = ad_type * (time/86400)  * country
+        if(!isNaN(total)){
+            $("#instruct").text(`this is going to cost you ${Math.ceil(total)} ADs`)
+        }
+        else{
+            $("#instruct").text(`select the category your want`)
+        }
+    }
+    else if($(this).val() == "hamlet"){
+        let no_of_thread = $("#option").val().split(",")[1]
+        let no_of_member = $("#option").val().split(",")[2]
+        let specific_ad = no_of_thread * no_of_member * ad_rate * (time/86400) * country
+
+        if(!isNaN(specific_ad)){
+            $("#instruct").text(`this is going to cost you ${Math.ceil(specific_ad)} ADs`)
+        }
+        else{
+            $("#instruct").text(`select the hamlet your want`)
+        }
+    }
+    else if($(this).val() == "home"){
+        ad_type = "{{home.cost}}"
+        total = ad_type * (time/86400) * country
+        if(!isNaN(total)){
+            $("#instruct").text(`this is going to cost you ${Math.ceil(total)} ADs`)
+        }
+        else{
+            $("#instruct").text(`select the category your want`)
+        } 
+    }
+    console.log(ad_type)
+
+})
+$("#time").change(function(){
+    let choice = $("#option").val().split(" ")[1]
+    time = $("#time").val()
+    updatecost()
+})
+
+function updatecost(){
+    if($("#ad_type").val() == "all"){
+        ad_type = "{{all.cost}}" 
+        total = ad_type * (time/86400) * country
+        if(!isNaN(total)){
+            $("#instruct").text(`this is going to cost you ${Math.ceil(total)} ADs`)
+        }
+        else{
+            $("#instruct").text(`select the category your want`)
+        }
+    }
+    else if($("#ad_type").val() == "feeds"){
+        ad_type = "{{feeds.cost}}" 
+        total = ad_type * (time/86400)  * country
+        if(!isNaN(total)){
+            $("#instruct").text(`this is going to cost you ${Math.ceil(total)} ADs`)
+        }
+        else{
+            $("#instruct").text(`select the category your want`)
+        }
+    }
+    else if($("#ad_type").val() == "hamlet"){
+        let no_of_thread = $("#option").val().split(",")[1]
+        let no_of_member = $("#option").val().split(",")[2]
+        let specific_ad = no_of_thread * no_of_member * ad_rate * (time/86400) * country
+
+        if(!isNaN(specific_ad)){
+            $("#instruct").text(`this is going to cost you ${Math.ceil(specific_ad)} ADs`)
+        }
+        else{
+            $("#instruct").text(`select the hamlet your want`)
+        }
+    }
+    else if($("#ad_type").val() == "home"){
+        ad_type = "{{home.cost}}"
+        total = ad_type * (time/86400) * country
+        if(!isNaN(total)){
+            $("#instruct").text(`this is going to cost you ${Math.ceil(total)} ADs`)
+        }
+        else{
+            $("#instruct").text(`select the category your want`)
+        } 
+    }
+}
+
+console.log(ad_type)
+
+$("#option").change(function(){
+    // ads should be charge per 100 for now
+    let no_of_thread = $(this).val().split(",")[1]
+    let no_of_member = $(this).val().split(",")[2]
+    let specific_ad = no_of_thread * no_of_member * ad_rate * (time/86400) * country
+    console.log(no_of_thread)
+    console.log(no_of_member)
+    console.log(no_of_thread * no_of_member)
+    if(!isNaN(specific_ad)){
+        $("#instruct").text(`this is going to cost you ${Math.ceil(specific_ad)} ADs`)
+    }
+    else{
+        $("#instruct").text(`select the hamlet your want`)
+    }
+})
+
+
+let ad_categories = '{{all_categories}}'.replace(/&quot;/g, '"')
+parsed_ad = JSON.parse(ad_categories)
+console.log(parsed_ad)
+
+let filterAds = document.getElementById("filterAds")
+filterAds.addEventListener("change", filterData)
+
+function filterData(){
+    let regexpAds = new RegExp(`${filterAds.value}`, 'i')
+    parsed_ad = parsed_ad.filter(data => regexpAds.test(data.fields.title))
+    $("#option").empty()
+    parsed_ad.forEach(ad =>{
+        $("#option").append(`<option value="${ad.fields.title},${ad.fields.no_of_thread},${ad.fields.no_of_member}">${ad.fields.title}</option> `)
+    })
+}
+    parsed_ad.forEach(ad =>{
+        $("#option").append(`<option value="${ad.fields.title},${ad.fields.no_of_thread},${ad.fields.no_of_member}">${ad.fields.title}</option> `)
+    })
+
+    $("#advertiseForm").submit(function(){
+        $("#button").attr('disabled', true)
+    })
+
+</script>
+{% else %}
+    <h1>Logged in</h1>
+    <a href="/login">click here to login to advertise</a>
+    {% endif %}
+{% endblock %}

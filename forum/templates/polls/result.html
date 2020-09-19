@@ -1,0 +1,50 @@
+{% extends "forum/base.html" %}
+{% block title %}{{ pollresult.title }} - poll result {% endblock %}
+{% load social_share %}
+{% block content %}
+<img src="{{ pollresult.graph.url }}" class="pollresultGraph" alt="{{pollresult.title}} bar chart">   
+ <p class="contentTitle">{{pollresult.title}}</p> 
+    {% for choice in pollresult.pollchoice_set.all|dictsortreversed:"votes" %}
+        <div class="results">
+            <span id="choice">{{choice.choice}}</span>
+            <span>-</span>
+            <span id="votes">&nbsp; &nbsp; &nbsp; {{choice.votes}}</span>
+        </div>
+    {% endfor %}
+    <div id=result_statement></div>
+<br>
+
+
+<p>Share Result</p>
+    <div class="socialIcons">
+        <div class="allicons">
+            <a href='https://www.facebook.com/sharer/sharer.php?u=http://www.africonn.com{{request.get_full_path|urlencode}}' target="_blank"><i class="fab fa-facebook facebook-this"></i></a>
+        </div>
+        <div class="allicons">
+            <a href='https://www.reddit.com/submit?title={{pollresult.title}}&url=http://www.africonn.com{{request.get_full_path|urlencode}}' target="_blank"><i class="fab fa-reddit reddit-this"></i></a>
+        </div>
+        <div class="allicons">
+            <a href='https://wa.me/?text={{pollresult.title}} http://www.africonn.com{{request.get_full_path|urlencode}}' target="_blank"><i class="fab fa-whatsapp whatsapp-this"></i></a>
+        </div>
+        <div class="allicons">
+            <a href='https://twitter.com/intent/tweet?text={{pollresult.title}} http://www.africonn.com{{request.get_full_path|urlencode}}' target="_blank"><i class="fab fa-twitter tweet-this"></i></a>
+        </div>   
+    </div>
+    
+    <p class="tweet-color" onclick="window.history.back()"><i class="fa fa-arrow-left"></i> go back</p>
+
+<script>
+    let winchoice = $(".results").eq(0).find("#choice").text()
+    let winvotes = Number($(".results").eq(0).find("#votes").text())
+    let secchoice = $(".results").eq(1).find("#choice").text()
+    let secvotes = Number($(".results").eq(1).find("#votes").text())
+    let allvotes = Number("{{pollresult.voter_set.all.count}}")
+    if(winvotes === secvotes){
+        $("#result_statement").html("<p style='font-size: 20px' class='reddit-color'><b>it is a tie</b></p>")
+    }
+    else if(winvotes >  secvotes){
+        $("#result_statement").html(`<p style="font-size: 16px" class="whatsapp-color"><b>${winchoice} won with ${(winvotes / allvotes) * 100}% of the total votes <br> <b>Total</b> votes is ${allvotes}</b></p>`)
+    }
+</script>
+
+{% endblock %}

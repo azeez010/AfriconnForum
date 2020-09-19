@@ -1,0 +1,15 @@
+{% extends "forum/base.html" %}
+{% block title %}Update - job{% endblock %}
+{% block content %}
+{% load crispy_forms_tags %}
+    {% if user.is_authenticated %}
+    <div class="allCard">
+        <h1 class="contentTitle">Update Job</h1>    
+        <form action="/jobs/updateJob/{{job.id}}/" method="post" enctype="multipart/form-data"> 
+                    {% csrf_token %}
+                    {{ form | crispy}}
+            <input type="submit" value="post">
+        </form>
+    </div>
+    {% endif %}
+{% endblock %}

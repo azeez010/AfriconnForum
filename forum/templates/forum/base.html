@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    {% load filterdata %}
+    {% load humanize %}
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="{% block desc %}{% endblock %}, This is a community for africans around the globe">
+    <meta name="keywords" content="african, communities, community, africonn, afro, negroes, blacks, {% block meta %}{% endblock %}">
+    <meta name="google-site-verification" content="hyo173QPSrQ0bOVGiFfAEDgpmCmhgKjtNqkiMt4QqMo" /> <title>{% block title %}{% endblock %} - on Africonn an African community</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js" integrity="sha512-bLT0Qm9VnAYZDflyKcBaQ2gg0hSYNQrJ8RilYldYQ1FxQYoCLtUjuuRuZo+fjqhx/qtq/1itJ0C2ejDxltZVFg==" crossorigin="anonymous"></script>
+    <meta name="viewport" content="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width" />
+    <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.14.0/css/all.min.css">
+    <meta name="theme-color" content="black" id="theme-bar">
+    
+        <!-- Knowing if i am on the job app -->
+{% if theme.setting == "dark" %}
+    <link rel="stylesheet" id="theme_link" type="text/css" href="/static/dark.css">
+    <link type="image/gif" id="changeIcon" rel="icon" href="/static/afdark.gif">
+{% else %}
+    <link rel="stylesheet" id="theme_link" type="text/css" href="/static/light.css">
+    <link type="image/gif" id="changeIcon" rel="icon" href="/static/aflight.gif">    
+{% endif %}
+    <style>
+        #topbar, #middlebar, #bottombar{
+            background: none;
+            background: {{ theme_color }};
+        }
+        #headerTitle, h1, .theme_color{
+            -webkit-text-fill-color: none !important;
+            background: none !important;
+            color: {{theme_color}};
+        }
+        @media (max-width: 600px){
+            #menu li{
+                margin-top: 15px;
+            }
+            li a{
+                font-size: 18px;
+                color: {{theme_color}};
+            }
+        }
+    </style>
+        {% if request.path|app:"forum" %}
+        <style>
+                .forumactive{
+                    color: {{ theme_color }};
+                }
+            </style>
+        {% endif %}
+        
+
+    {% if request.path|app:"followers" %}
+    <style>
+        .followers{
+            color: {{ theme_color }};
+        }
+    </style>
+    {% endif %}
+
+    {% if request.path|app:"profile" %}
+    <style>
+        .profileactive{
+            color: {{ theme_color }};
+        }
+    </style>
+    {% endif %}
+    {% if request.path|app:"search" %}
+    <style>
+        #nav-menu-item{
+        padding-bottom: 5500px;
+        }
+        @media (max-width: 600px){
+        #container{
+            display: grid;
+            grid-template-columns: 1fr;
+            padding-bottom: 600px;
+            }
+            #menu li{
+                font-size: 26px;
+                color: {{theme_color}};
+            }
+            
+        }
+    </style>
+    {% endif %}
+    
+    {% if request.path|app:"advert" %}
+    <style>
+            .advertactive{
+                color:{{ theme_color }};
+            }
+        </style>
+    {% endif %}
+       
+    {% if request.path|app:"favour" %}
+    <style>
+            .favourite{
+                color: {{ theme_color }};
+            }
+        </style>
+    {% endif %}
+    {% if request.path|app:"forumchatlist" %}
+    <style>
+        .chats{
+            color: {{ theme_color }};
+        }
+    </style>
+    {% endif %}
+
+
+    <body>
+        <div id="header">
+            <div class="name_bar">
+          <div id="navbar">
+              <div id="topbar"></div>
+              <div id="middlebar"></div>
+              <div id="bottombar"></div>
+          </div>
+          <div>
+          <h1 id="headerTitle"><span>Africonn.com</span></h1>
+        </div>
+    </div>
+    <div class="iconbar">
+            {% if user.is_authenticated %}
+            <div><i id="new_thread_comments" class="fa fa-inbox icon"></i>{% if new_comments > 0 %}<span class="notification_icon">{{new_comments}}</span>{% endif %}</div>
+                <div><i id="replies" class="fa fa-comment icon"></i>{% if new_replies > 0 %}<span class="notification_icon">{{ new_replies }}</span>{% endif %}</div>
+                <div><i id="messages" class="fas fa-envelope icon"></i>{% if new_messages > 0 %}<span class="notification_icon">{{ new_messages }}</span>{% endif %}</div>
+           {% else %}
+                <p class="bar-login"><a class="bar-login" href="/login">Login</a></p>
+                <p class="bar-signup"><a class="bar-signup" href="/forum/signup">Signup</a></p>
+            {% endif %}
+            {% if request.path|app:"forum" and not request.path|app:"forumchatlist"  %}
+                <i id="search-forum" class="fa fa-search icon"></i>
+            {% endif %}
+            {% if request.path|app:"polls" %}
+                <i id="search-poll" class="fa fa-search icon"></i>
+                <style> 
+                    .pollsactive{
+                        color: {{theme_color}};
+                    }
+                    #authorImage{
+                        width: 70px; 
+                        height: 70px;
+                        border-radius: 50%;
+                        padding: 3px;
+                        border-width: 1px;
+                        border-style: solid;
+                        border-color: {{theme_color}};  
+                    }
+                </style>
+            {% endif %}
+            {% if request.path|app:"jobs" %}
+                <i id="search-job" class="fa fa-search icon"></i>
+                <style>
+                    .jobsactive{
+                        color: {{theme_color}};
+                    }
+                    #authorImage{
+                        width: 70px; 
+                        height: 70px;
+                        border-radius: 50%;
+                        padding: 3px;
+                        border-width: 1px;
+                        border-style: solid;
+                        border-color: {{theme_color}};  
+                    }
+                </style>
+            {% endif %}
+            
+            {% if request.path|app:"blog" %}
+                <i id="search-blog" class="fa fa-search icon"></i>
+                <style>
+                    .blogsactive{
+                        color: {{theme_color}};
+                    }
+                    #authorImage{
+                        width: 70px; 
+                        height: 70px;
+                        border-radius: 50%;
+                        padding: 3px;
+                        border-width: 1px;
+                        border-style: solid;
+                        border-color: {{theme_color}};  
+                    }
+                </style>
+            {% endif %}
+        </div>
+    </div>
+
+<div id="container">
+      <div id="nav-menu-item">  
+            <ul id="menu">
+              <li><a  class="forumactive" href="/forum/home">Forum</a></li>
+              <li><a class="pollsactive" href="/polls/new">Online polls</a></li>
+              <li><a class="jobsactive" href="/jobs/home/">Jobs {{ theme_color.}}</a></li>
+              <li><a class="blogsactive" href="/blog/home">Blog</a></li>
+              {% if user.is_authenticated %}
+                <li><a class="chats" href="/forum/chat-list/">chat</a></li>
+                <li><a class="favourite" href="/favourites/">Favourites</a></li>
+                <li><a href="/followers-content/" class="followers">Feeds</a></li>
+                <li><a class="profileactive" href="/profile">My profile</a></li>
+                <li><a class="advertactive" href="/advertisement/">Advertise</a></li>
+                <li><a href="/logout">logout</a></li>
+              {% endif %}
+            </ul>  
+      </div>
+      <div id="main-content">
+          <div id="searchBox">
+            {% if request.path|app:"forum" %}  
+            <form action="/forum/search-forum/"method="POST">
+                {% csrf_token %}
+                <div style="display: flex; justify-content: space-between;">
+                    <input type="search" name="search" placeholder="Search...">
+                    <button style="border-radius: 50%; background: none; background-color: white; border: 1px black solid; height: 30px; width: 30px"><i style="color: black; position: absolute; margin-left: -6px; margin-top: -6px;" id="searchForum" class="fa fa-search"></i></button>
+                </div>
+            </form>
+            {% elif request.path|app:"jobs" %}
+            <form action="/jobs/search-job/"method="POST">
+                {% csrf_token %}
+                <div style="display: flex; justify-content: space-between;">
+                    <input type="search" name="search" placeholder="Search...">
+                    <button style="border-radius: 50%; background: none; background-color: white; border: 1px black solid; height: 30px; width: 30px"><i style="color: black; position: absolute; margin-left: -6px; margin-top: -6px;" id="searchForum" class="fa fa-search"></i></button>
+                </div>
+            </form>
+            {% elif request.path|app:"polls" %}
+            <form action="/polls/search-poll/"method="POST">
+                {% csrf_token %}
+                <div style="display: flex; justify-content: space-between;">
+                    <input type="search" name="search" placeholder="Search...">
+                    <button style="border-radius: 50%; background: none; background-color: white; border: 1px black solid; height: 30px; width: 30px"><i style="color: black; position: absolute; margin-left: -6px; margin-top: -6px;" id="searchForum" class="fa fa-search"></i></button>
+                </div>
+            </form>
+            {% elif request.path|app:"blog" %}
+            <form action="/blog/search/"method="POST">
+                {% csrf_token %}
+                <div style="display: flex; justify-content: space-between;">
+                    <input type="search" name="search" placeholder="Search...">
+                    <button style="border-radius: 50%; background: none; background-color: white; border: 1px black solid; height: 30px; width: 30px"><i style="color: black; position: absolute; margin-left: -6px; margin-top: -6px;" id="searchForum" class="fa fa-search"></i></button>
+                </div>
+            </form>
+            {% endif %}
+          </div>
+                {% if messages %}
+                {% for message in messages %}
+                    <div id="{{ message.tags }}">
+                        <div>{{ message }}</div>
+                        <div class="messageCancel">&times;</div>
+                    </div>
+                {% endfor %}
+            {% endif %} 
+    {% block content %}
+    {% endblock %}
+      </div>
+    <!--  container closing div -->
+</div>
+{% if user.is_authenticated %}
+    <div id="mobile-footer">
+        <div class="bottom-nav-clickable forumactive">
+            <i class="fa fa-home darkicon forumactive"></i>
+            <p class="forumactive">home</p>
+        </div>
+        <div class="bottom-nav-clickable followers">
+            <i class="fa fa-rss darkicon followers"></i>
+            <p class="followers">feeds</p>
+        </div>
+        <div class="bottom-nav-clickable jobsactive">
+            <i class="fa fa-suitcase darkicon jobsactive"></i>
+            <p class="jobsactive">jobs</p>
+        </div>
+        <div class="bottom-nav-clickable profileactive">
+            <i class="fa fa-user-circle darkicon profileactive"></i>
+            <p class="profileactive">profile</p>
+        </div>
+        <div class="bottom-nav-clickable blogsactive">
+            <i class="fa fa-newspaper darkicon blogsactive"></i>
+            <p class=" blogsactive">blog</p>
+        </div>
+        <div class="bottom-nav-clickable pollsactive">
+            <i class="fa fa-chart-area darkicon pollsactive"></i>
+            <p class="pollsactive">polls</p>
+        </div>
+    </div>
+{% else %}
+<div id="mobile-footer">
+    <div class="bottom-nav-clickable forumactive">
+        <i class="fa fa-home"></i>
+        <p>home</p>
+    </div>
+    <div class="bottom-nav-clickable jobsactive">
+        <i class="fa fa-suitcase"></i>
+        <p>jobs</p>
+    </div>
+    <div class="bottom-nav-clickable pollsactive">
+        <i class="fa fa-chart-area"></i>
+        <p>polls</p>
+    </div>
+    <div class="bottom-nav-clickable blogsactive">
+        <i class="fa fa-newspaper"></i>
+        <p>blog</p>
+    </div>
+</div>
+{% endif %}
+    <footer>
+        <p><a class="footerColor" href="/info/#about">About Africonn</a></p>
+        <p><a class="footerColor" href="/info/#points">About Africonn points</a></p>
+        <p><a class="footerColor" href="/info/#terms">Terms of use</a> 
+      </p>
+        <p>copyright &copy;<a target="_blank" style="color: #777" href="https://www.dataslid.com"> dataslid </a><a target="_blank" href="https://www.youtube.com/channel/UC2CnO0lfpt6w7zbHTZE6BzA">  <i style="color: red" class="fab fa-youtube"></i></a> 2020</p> 
+        </div>
+    </footer>
+<script>
+// To toggle social icons
+$("#shareToggle").click(function(){
+    if($("#hideSocialIcons").attr("bool") === "False"){
+        $("#hideSocialIcons").attr("bool", "True")
+        $("#hideSocialIcons").css('display', "flex")
+    }
+    else{
+        $("#hideSocialIcons").attr("bool", "False")
+        $("#hideSocialIcons").css('display', "none")
+    }
+})
+    $(".messageCancel").click(function(){
+      $(this).parent().hide()    
+    })
+    $("#headerTitle").click(function(){
+        window.location.href = `/forum/home/`    
+    })
+
+    let bottomDiv = document.getElementById("mobile-footer")
+    {% if user.is_authenticated %}
+        let nav_url = [`/forum/home/`, '/followers-content/', '/jobs/home/', '/profile/', '/blog/home/', '/polls/new/']
+    {% else %}
+        let nav_url = [`/forum/home/`,  '/jobs/home/',  '/polls/new/', '/blog/home/']
+    {% endif %}
+
+    let nav_url_div = document.getElementsByClassName("bottom-nav-clickable")
+    var max = "(max-width: 600px)"
+    if(window.matchMedia(max).matches){
+        let smart = window.scrollY
+        window.onscroll = (e) => {
+            let position =  window.scrollY
+            if(smart < position){
+                smart = position
+                bottomDiv.style.display = "none"
+            }
+            else{
+                smart = position
+                bottomDiv.style.display = "flex"
+            }
+        }
+    }
+    for(let i = 0; i < nav_url_div.length; i++){
+        nav_url_div[i].style.cursor = "pointer"
+        nav_url_div[i].style.justifyContent = "center"
+        nav_url_div[i].style.alignContent = "center"
+        nav_url_div[i].onclick = () => window.location.href = nav_url[i]
+    } 
+
+    let toggleSearchBox = false
+    $("#search-forum").click(function(){
+        if(!toggleSearchBox){
+            $("#searchBox").css('display', 'block');
+            toggleSearchBox = !toggleSearchBox;
+        }
+        else{
+            $("#searchBox").css('display', 'none');
+            toggleSearchBox = !toggleSearchBox;
+        }
+    })
+
+    $("#search-job").click(function(){
+        if(!toggleSearchBox){
+            $("#searchBox").css('display', 'block');
+            toggleSearchBox = !toggleSearchBox;
+        }
+        else{
+            $("#searchBox").css('display', 'none');
+            toggleSearchBox = !toggleSearchBox;
+        }
+    })
+
+    $("#search-poll").click(function(){
+        if(!toggleSearchBox){
+            $("#searchBox").css('display', 'block');
+            toggleSearchBox = !toggleSearchBox;
+        }
+        else{
+            $("#searchBox").css('display', 'none');
+            toggleSearchBox = !toggleSearchBox;
+        }
+    })
+
+    $("#search-blog").click(function(){
+        if(!toggleSearchBox){
+            $("#searchBox").css('display', 'block');
+            toggleSearchBox = !toggleSearchBox;
+        }
+        else{
+            $("#searchBox").css('display', 'none');
+            toggleSearchBox = !toggleSearchBox;
+        }
+    })
+
+    $("#searchForum").click(function(){
+        window.location.href = `/forum/search-forum/`    
+    })
+    
+    
+    // $("#search-poll").click(function(){
+    //     window.location.href = `/polls/search-poll/`    
+    // })
+    
+    // $("#search-job").click(function(){
+    //     window.location.href = `/jobs/search-job/`    
+    // })
+    
+    // $("#search-blog").click(function(){
+    //     window.location.href = `/blog/search/`    
+    // })
+    // toggle navbar
+    $("#navbar").click(function(){
+        $(this).toggleClass("change")
+            if ($("#menu").hasClass('visible')){
+                $("#menu").animate({"left":"-1000px"}, "fast").removeClass('visible');
+                $("body").css("overflow", "visible")
+            } 
+            else {
+                $("#menu").animate({"left":"0"}, "fast").addClass('visible');
+                $("body").css("overflow", "hidden")
+                $(this).css("overflow", "hidden")
+            }
+        })
+
+        $(".seen").click(function(){    
+            let comment_id = $(this).attr("comment")
+            let url = $(this).attr("url")
+            posts({is_seen: "True", comment_id}, "/forum/seen/")
+            window.location.href = `/forum/thread/${url}/#${comment_id}`
+
+        })
+
+
+        $("#messages").click(function(){    
+            window.location.href = `/forum/messages/`
+        })
+
+        $("#replies").click(function(){
+            window.location.href = `/forum/replies/`
+        })
+
+
+        $("#new_thread_comments").click(function(){
+            window.location.href = `/forum/new-thread-comments/`
+        })
+        
+    //for seen thread
+        $(".seenThread").click(function(){    
+            let thread_id = $(this).attr("thread")
+            let url = $(this).attr("url")
+            posts({is_seen: "True", thread_id}, "/forum/seenThread/")
+            window.location.href = `/forum/thread/${url}/#${thread_id}`
+
+        })
+
+        function posts(val, Url){
+        let payload = JSON.stringify(val) 
+        let post = $.ajax({
+            url: Url,
+            method: "POST",
+            headers: {"X-CSRFToken": "{{ csrf_token }}"},
+            data: {"data": payload},
+            dataType: "json",
+            success: function(res, status){
+                console.log(res);
+                console.log(status)
+            },
+            
+            fail: function(res){
+                console.log(res.status);
+                // console.log(status)
+            }
+        })
+
+        post.done(()=>{
+            console.log("success")
+        })
+
+        post.fail(()=>{
+            // window.location.href = "/forum/home"
+            console.log("fail")
+        })
+    }
+
+    $("#theme").click(function(){
+        if(this.checked){
+            $("#theme_link").attr("href", "/static/dark.css")
+            $('#themeStatus').text("dark mode")
+            $("#changeIcon").attr({"rel": "icon", "href": "/static/afdark.gif", "type": "image/gif"})
+            posts({"name": "theme", "theme" : "dark"}, "/profile/theme/")
+        }
+        else{
+            $("#theme_link").attr("href", "/static/light.css")
+            $('#themeStatus').text("light mode")
+            $("#changeIcon").attr({"rel": "icon", "href": "/static/aflight.gif", "type": "image/gif"})
+            posts({"name": "theme", "theme": "light"}, "/profile/theme/")
+        }
+    })
+</script>
+
+{% if user.is_authenticated %}
+    <script>
+    let details = localStorage.getItem("payload")
+        if(details){
+            localStorage.removeItem("payload")
+        }
+    </script>
+{% endif %}
+
+{% if not user.is_authenticated %}
+    <script>
+        let path = "{{request.get_full_path}}"
+        path = path.replace(/&amp;/g, "&")
+        if(!path.match("login") && !path.match("signup")){
+            sessionStorage.setItem("redirect", path)
+        }
+    </script>
+{% endif %}
+</body>
+</html>

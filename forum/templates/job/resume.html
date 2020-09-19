@@ -1,0 +1,24 @@
+{% extends "forum/base.html" %}
+{% block title %}Resume{% endblock %}
+{% block content %}
+{% load crispy_forms_tags %}
+
+{% if user.is_authenticated %}
+    <form action="/jobs/make-resume/">
+        {% csrf_token %}
+        {{resumeForm.media}}
+        {{ resumeForm|crispy }}
+        <input type="submit" value="submit">
+    </form>
+    <p>submit to preview and download</p>
+{% else %}
+    <p id="placeholder"><a href="/login/">Login </a>to make resume</p>
+{% endif %}
+<p id="back" style="cursor: pointer;" class="contentTitle tweet-this"><i class="fa fa-arrow-left">back</i></p>
+
+<script>
+    $("#back").click(function(){
+        window.history.back() 
+    })
+</script>
+{% endblock %}

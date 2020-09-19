@@ -1,0 +1,28 @@
+{% extends "forum/base.html" %}
+{% block title %}Update - thread{% endblock %}
+{% block content %}
+{% load filterdata %}
+{% load crispy_forms_tags %}
+<p class="contentTitle">{{username}}'s hamlets</p>
+{% for each_hamlet in hamlets %}
+<div class="threadCard">
+    <div>
+        {% if each_hamlet.hamlet.image %}
+            <img class="usericon" src="{{each_hamlet.hamlet.image.url}}" alt="">
+        {% else %}
+            <img class="usericon" src="/static/hamlet.png" alt="hamlet default image">
+        {% endif %}
+    </div>   
+    <div>
+        <a class="contentTitle" href="/forum/hamlet/{{each_hamlet.hamlet.title}}/{{each_hamlet.hamlet.id}}/">{{each_hamlet.hamlet.title}}</a>
+        <p>{{each_hamlet.hamlet.description}}</p>
+        <span class="contentInfo">{{each_hamlet.hamlet.members_set.all.count|numba_of_views}} members</span>
+        <a  href="/profile/{{each_hamlet.hamlet.created_by.username}}/" class="contentInfo"><i class="fa fa-user "></i> {{each_hamlet.hamlet.created_by.username}}</a> 
+        <span class="contentInfo">{{each_hamlet.hamlet.no_of_thread}} threads</span>
+    </div>    
+</div>
+{% empty %}
+<p class="reddit-color">No hamlet yet</p>
+{% endfor %}
+
+{% endblock %}

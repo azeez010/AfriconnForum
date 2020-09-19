@@ -1,0 +1,14 @@
+{% extends "forum/base.html" %}
+{% block title %}Update blog{% endblock %}
+{% load crispy_forms_tags %}
+{% block content %}
+    {% if user.is_authenticated %} 
+    <form action="/blog/authorUpdate/{{blog.id}}/" method="Post" enctype="multipart/form-data"> 
+                {% csrf_token %}
+                {{ form.media }}
+                {{ form | crispy}}
+        <input type="submit" value="post">
+    </form>
+    {% endif %}
+    <p>{{thread.id}}</p>
+{% endblock %}

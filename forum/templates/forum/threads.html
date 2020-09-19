@@ -1,0 +1,272 @@
+{% extends "forum/base.html" %}
+{% block title %}Hamlet - {{title}}{% endblock %}
+{% block content %}
+{% load filterdata %}
+
+<!-- ads -->
+<div id="hamletDiv">
+  <div>
+      {% if hamlet_details.first.image %}
+          <img class="usericon" src="{{hamlet_details.first.image.url}}" alt="">
+      {% else %}
+          <img class="usericon" src="/static/hamlet.png" alt="hamlet default image">
+      {% endif %}
+  </div>   
+  <div>
+    <p class="contentTitle author-light-color">{{ title }}</p>
+    <p>{{ hamlet_details.first.description }}</p>
+    <a  href="/profile/{{hamlet_details.first.created_by.username}}/" class="contentInfo"><i class="fa fa-user "></i> {{hamlet_details.first.created_by.username}}</a> 
+    <span class="contentInfo"><span id="number_of_member">{{hamlet_details.first.members_set.all.count|numba_of_views}}</span> members</span>
+    <span class="contentInfo">{{hamlet_details.first.no_of_thread}} threads</span>
+    <br><span id="shareToggle">Share</span>
+    <div bool="False" id="hideSocialIcons">
+        <img style="width: 22px; height: 22px; margin-right: 5px" src="/static/aflight.gif" id="sharePage" alt="africonn icon">
+        <div class="allicons">
+            <a href='https://www.facebook.com/sharer/sharer.php?u=http://www.africonn.com{{request.get_full_path|urlencode}}' target="_blank"><i class="fab fa-facebook facebook-this"></i></a>
+        </div>
+        <div class="allicons">
+            <a href='https://www.reddit.com/submit?title={{hamlet_details.first.title}}&url=http://www.africonn.com{{request.get_full_path|urlencode}}' target="_blank"><i class="fab fa-reddit reddit-this"></i></a>
+        </div>
+        <div class="allicons">
+            <a href='https://wa.me/?text={{hamlet_details.first.title}} http://www.africonn.com{{request.get_full_path|urlencode}}' target="_blank"><i class="fab fa-whatsapp whatsapp-this"></i></a>
+        </div>
+        <div class="allicons">
+            <a href='https://twitter.com/intent/tweet?text={{hamlet_details.first.title}} http://www.africonn.com{{request.get_full_path|urlencode}}' target="_blank"><i class="fab fa-twitter tweet-this"></i></a>
+        </div> 
+    </div>
+    
+    {% if user.id == hamlet_details.first.created_by.id %} 
+      <span id="join-hamlet-info" class="whatsapp-color">You are the creator of this hamlet</span>
+      <a href="/forum/hamlet/{{hamlet_details.first.id}}/update" class="contentInfo"><i class="fa fa-pencil-alt">edit</i></a> 
+      {% else %}
+        {% if are_you_a_member %}
+          <span id="join-hamlet-info" class="tweet-color">You are a member of this hamlet</span>
+          <br>
+          <button id="join-hamlet" class="followclass" style="color: white"  bool="False" ><span id="span-hamlet">quit</span> </button>
+        {% else %}
+          <span id="join-hamlet-info" class="reddit-color">You are not a member of this hamlet, click join to become a member </span>
+          <br>  
+              {% if user.is_authenticated %}
+                <button id="join-hamlet" bool="True"><span id="span-hamlet">join</span> </button>
+              {% else %}
+                <button onclick="window.location.href='/login/'"><span id="span-hamlet">join</span> </button>
+              {% endif %}
+          {% endif %}
+    {% endif %}
+  </div>
+</div>
+<br>
+
+<!-- thread_category.id -->
+{% for thread in thread_post|dictsortreversed:"datetime" %}
+<div class="threadCard">         
+  <div>
+            {% if thread.user.profile.profile_pic %}
+                <img class="usericon" src="{{thread.user.profile.profile_pic.url}}" alt="">
+            {% else %}
+                <div id="authorDefaultImage">{{thread.user.username|default_pic}}</div>
+            {% endif %}
+        </div>   
+        <div>
+            <a href="/profile/{{thread.user.username}}/" class="contentInfo">{{ thread.user.username  }} </a>
+            <p style="margin-bottom: 5px;"><a class="contentTitle" href="/forum/thread/?hamlet={{ thread.thread_category.id }}&slug={{ thread.threadSlug }}&thread_no={{ thread.id }}">{{ thread.title }}</a></p>
+            <p class="threadSummary">{{thread.details|trunc|urlFilter|safe}}</p>
+            <span class="contentInfo"><i class="fa fa-heart contentIcon"></i> {{ thread.thread_like_set.all|likenum:"True" | numba_of_views}}</span>
+            <span class="contentInfo"><i class="fa fa-angry contentIcon"></i> {{ thread.thread_like_set.all|dislikenum:"True" | numba_of_views }}</span>
+            <span class="contentInfo"><i class="fa fa-newspaper contentIcon"></i><a class="contentInfo" href="/forum/hamlet/{{ thread.thread_category.title}}/{{ thread.thread_category.id}}/">{{ thread.thread_category.title }}</a></span>
+            {% if thread.created_at|new_threads %}
+              <span class="new_threads">New!</span>
+            {% endif %}
+             
+            <div class="spacing-bottom">
+              <span class="contentInfo"><i class="fa fa-clock contentIcon"></i> {{ thread.created_at|forumDate }} </span>
+              <span class="contentInfo"><i class="fa fa-eye contentIcon"></i>  {{thread.views|numba_of_views}} </span>
+              <span class="contentInfo"><i class="fa fa-comment contentIcon"></i> {{thread.comment_set.all.count|numba_of_views}}</span>
+            </div>
+        </div>
+    </div>
+{% empty %}
+    <p class="tweet-color">No thread yet, be the first</p>
+{% endfor %}
+
+{% if thread_post.paginator.num_pages != 1%}        
+  {% if thread_post.number > 5%}  
+  <div class="other_page"><a href="/forum/hamlet/{{hamlet_details.first.title}}/{{hamlet_details.first.id}}/?page=1">1</a></div>
+  <span class="other_page_dot">...</span>
+  {% endif %}    
+    {% for pages in thread_post.paginator.page_range %}
+        {% if pages ==  thread_post.number %}
+        <div class="current_page"><a style="color: white;"  href="/forum/hamlet/{{hamlet_details.first.title}}/{{hamlet_details.first.id}}/?page={{pages}}">{{pages}}</a></div>
+        {% else %}
+          {% if pages > thread_post.number|add:-5 and pages < thread_post.number|add:5  %}  
+                <div class="other_page"><a href="/forum/hamlet/{{hamlet_details.first.title}}/{{hamlet_details.first.id}}/?page={{pages}}">{{pages}}</a></div>
+            {% endif %}
+        {% endif %}
+    {% endfor %}
+    {% if thread_post.number|add:4 < thread_post.paginator.num_pages %}  
+      <span class="other_page_dot">...</span>
+      <div class="other_page"><a href="/forum/hamlet/{{hamlet_details.first.title}}/{{hamlet_details.first.id}}/?page={{thread_post.paginator.num_pages}}">{{ thread_post.paginator.num_pages }}</a></div>
+    {% endif %}  
+  {% endif %}
+
+{% if user.is_authenticated and  not user.ban.on_ban %}  
+  <p id="floatingButton"><a class="createThread" href="/forum/create/{{ title }}/{{ hamletID }}/"><i class="fa fa-pencil-alt createThread"></i></a></p>
+{% endif %}
+
+<script src="/static/promotion.js"></script>
+<script>
+
+$("#sharePage").click(function(){
+    let share_id = "{{hamlet_details.first.id}}"
+    let content_owner = "{{hamlet_details.first.created_by.id}}"
+    let app = "hamlet"
+    let ask = confirm("Are you sure you want to share this hamlet")
+    if(ask){
+        posts({app, share_id, content_owner}, "/forum/share/")
+        alert("Thanks for sharing this hamlet")
+    }
+                    
+})
+
+  $("#join-hamlet").click(function(){
+    let user_id = "{{user.id}}"
+    let hamlet_id =  "{{hamlet_details.first.id}}"
+    
+    if($(this).attr("bool") == "False"){ 
+          let is_a_member  = ""
+          let get_member_no = Number($("#number_of_member").text())
+          let description = "{{hamlet_details.first.description}}"
+          $('#join-hamlet-info').text("You are no longer a member of this hamlet")
+          $('#join-hamlet-info').attr("class", "reddit-color")
+          $("#number_of_member").text(`${get_member_no-1}`)
+          posts({ user_id, hamlet_id, is_a_member, description }, "/forum/join-hamlet/")
+          $(this).attr("bool", "True")  
+          $("#span-hamlet").text("join")
+          $(this).css("color", "white")        
+          $(this).removeClass("followclass")
+      }
+      else{
+          let is_a_member  = $(this).attr("bool")
+          let get_member_no = Number($("#number_of_member").text())
+          let description = "{{hamlet_details.first.description}}"
+          $("#number_of_member").text(`${get_member_no+1}`)
+          $('#join-hamlet-info').text("You are now a member of this group, content from this group will appear your feeds")
+          $('#join-hamlet-info').attr("class", "whatsapp-color")
+          $("#span-hamlet").text("quit")
+          posts({ user_id, hamlet_id, is_a_member, description }, "/forum/join-hamlet/")
+          $(this).attr("bool", "False")
+          $(this).css("color", "green")
+          $(this).addClass("followclass")
+      }
+  })
+</script>
+
+<script>
+let ad_data = "{{serialized_ad}}".replace(/&quot;/g,'"')
+let ad_dict = JSON.parse(ad_data)
+let all_member = "{{all_members}}".replace(/&quot;/g,'"')
+let all_dict = JSON.parse(all_member)
+
+var resizeOnce = 0;
+window.addEventListener("resize", promote)
+function promote(){
+    var max = "(max-width: 600px)"
+    if(window.matchMedia(max).matches){
+        $("#container").css({"display": "grid", "grid-template-columns": "1fr"}) 
+        if(resizeOnce == 0){
+          $("#main-content").children().each(function(index){
+          if(ad_dict.length == 0) return true
+            if( index % 5 == 3){
+              let ad = ad_dict.shift()
+              if(ad.model == "forum.members"){
+                  let memberFiltered = all_dict.filter(member => member.pk == ad.fields.hamlet )
+                  let image = memberFiltered[0].fields.image_url ? `<img class="usericon" src="${memberFiltered[0].fields.image_url}" alt="">` : `<img class="usericon" src="/static/hamlet.png" alt="hamlet default image">` 
+                    $(this).after(`<div class="threadCard">         
+                      <div>
+                        ${image}
+                      </div>   
+                      <div>
+                          <p class="whatsapp-color">PROMOTED</p>
+                          <a class="contentTitle" href="/forum/hamlet/${memberFiltered[0].fields.title}/${memberFiltered[0].pk}/">${memberFiltered[0].fields.title}</a>
+                          <p>${memberFiltered[0].fields.description}</p>
+                          <a  href="/profile/{{community.created_by.username}}/" class="contentInfo"><i class="fa fa-user "></i> {{community.created_by.username}}</a> 
+                          <span class="contentInfo">${memberFiltered[0].fields.no_of_thread} threads</span>
+                        </div>
+                  </div>`)
+              }
+              else{
+                let urlLink = ad.fields.advert_url
+              
+              if(!urlLink.match("http")){
+                  urlLink =  `http:\\\\${ad.fields.advert_url}`
+                }
+              
+              $(this).after(`<div class="advertCard">
+                  <div>
+                      <img class="ads" src="${ad.fields.advert_image_url}" alt="${ad.fields.advert_title} image">
+                  </div>
+                  <div class="adContents">
+                    <p class="whatsapp-color">SPONSORED</p>
+                    <p>${ad.fields.advert_title}</p>
+                      <p class="contentInfo">${ad.fields.advert_details}</p>
+                    <button><a style="color:white" href="${urlLink}" target="_blank">Visit Site</a></button>
+                  </div>`
+                  )        
+              }
+            }
+          })
+              }
+          }
+    else{
+        $("#container").css({"display": "grid", "grid-template-columns": "1fr 3.5fr 1fr"})    
+        if(resizeOnce == 0){
+              $("#container").append(`<div id="promotedDiv"></div>`)
+            ad_dict.forEach((ad)=>{
+              if(ad.model == "forum.members"){
+                let memberFiltered = all_dict.filter(member => member.pk == ad.fields.hamlet )
+                let image = memberFiltered[0].fields.image_url ? `<img class="usericon" src="${memberFiltered[0].fields.image_url}" alt="">` : `<img class="usericon" src="/static/hamlet.png" alt="hamlet default image">` 
+                    $("#promotedDiv").append(`<div class='promoCard'>         
+                      <div>
+                        ${image}
+                      </div>   
+                      <div>
+                          <p class="whatsapp-color">PROMOTED</p>
+                          <a class="contentTitle" href="/forum/hamlet/${memberFiltered[0].fields.title}/${memberFiltered[0].pk}/">${memberFiltered[0].fields.title}</a>
+                          <p>${memberFiltered[0].fields.description}</p>
+                          <a  href="/profile/{{community.created_by.username}}/" class="contentInfo"><i class="fa fa-user "></i> {{community.created_by.username}}</a> 
+                          <span class="contentInfo">${memberFiltered[0].fields.no_of_thread} threads</span>
+                        </div>
+                  </div>`)
+              }
+              else{
+                let urlLink = ad.fields.advert_url
+              
+                  if(!urlLink.match("http")){
+                      urlLink =  `http:\\\\${ad.fields.advert_url}`
+                    }
+                  
+                  $("#promotedDiv").append(`<div class="advertCard">
+                      <div>
+                          <img class="ads" src="${ad.fields.advert_image_url}" alt="${ad.fields.advert_title}">
+                      </div>
+                      <div class="adContents">
+                        <p class="whatsapp-color">SPONSORED</p>
+                        <p>${ad.fields.advert_title}</p>
+                          <p>${ad.fields.advert_details}</p>
+                        <button class="adsButton"><a style="color:white" href="${urlLink}" target="_blank">Visit Site</a></button>
+                      </div>`
+                      )        
+                  }
+                })         
+          // $("#container").append("<div class='promoCard'>h1</div>")
+        }
+    }
+    resizeOnce++
+}
+promote()
+  
+
+</script>
+
+{% endblock %}
+

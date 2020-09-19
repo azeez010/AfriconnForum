@@ -1,0 +1,121 @@
+{% extends "forum/base.html" %}
+{% block title %}{{ poll.slugTitle }}{% endblock %}
+{% load social_share %}
+{% load filterdata %}
+{% block desc %}{{ poll.title }}{% endblock %}
+{% block meta %}{{ poll.title|keywords }}{% endblock %}
+{% block content %}
+<div class="allCard">
+  <h1>polls</h1>    
+  <h2>{{poll.title}}</h2>
+  {% if poll.image %}
+    <img src="{{poll.image.url}}" class="voteImage"  alt="">
+  {% endif %}
+  <!-- <h3>Vote</h3> -->
+  {% if poll.expiryDate|pollTime %}
+    <form action="/polls/vote/?title={{poll.slugTitle}}&value={{poll.id}}" method="post">
+      
+      {% csrf_token %}
+      <p class="contentInfo">Choose</p>
+      {% for choice in poll.pollchoice_set.all %}
+      <div>
+        {% if user.is_authenticated %}
+          <input type="radio" name="choice" id="choice{{ forloop.counter }}" value="{{ choice.id }}">
+        {% endif %}     
+        <span>{{ choice.choice }}</span>
+            </div>
+        {% endfor %}
+        {% if user.is_authenticated %}
+        <br>
+        <!-- <input type="checkbox" name="sendResult" id="">
+        <label style="font-size: 18px; color: orangered" for="sendResult">send me result via mail</label>
+        <br> -->
+        <input type="submit" value="Vote">
+        {% else %}
+        <p><a class="tweet-this" href="/login/">Login to vote</a></p>
+        {% endif %}
+      </form>
+      {% if user.is_authenticated %}
+      {% if fav_bool %}
+      <span>Mark favourite</span><i data="{{ poll.id }}" bool="true" class="fa fa-star angry-checked" id="fav_thread"></i>
+        {% else %}
+         <span>Mark favourite</span><i data="{{ poll.id }}" bool="false" class="fa fa-star angry-unchecked" id="fav_thread"></i>
+        {% endif %}
+    {% endif %}
+  <p id="shareToggle" >Share poll</p>
+  <br>
+  <div bool="False" id="hideSocialIcons">
+    <img style="width: 30px; height: 30px; margin-right: 5px" src="/static/aflight.gif" id="sharePage" alt="africonn icon">
+    <div class="allicons">
+      <a href='https://www.facebook.com/sharer/sharer.php?u=http://afrikas.herokuapp.com{{request.get_full_path}}' target="_blank"><i class="fab fa-facebook facebook-this facebook-font"></i></a>
+    </div>
+    <div class="allicons">
+        <a href='https://www.reddit.com/submit?title={{poll.title}}&url=http://afrikas.herokuapp.com{{request.get_full_path|urlencode}}' target="_blank"><i class="fab fa-reddit reddit-this reddit-font"></i></a>
+    </div>
+    <div class="allicons">
+        <a href='https://wa.me/?text={{poll.title}} http://afrikas.herokuapp.com{{request.get_full_path|urlencode}}' target="_blank"><i class="fab fa-whatsapp whatsapp-this whatsapp-font"></i></a>
+    </div>
+    <div class="allicons">
+        <a href='https://twitter.com/intent/tweet?text={{poll.title}} http://afrikas.herokuapp.com{{request.get_full_path|urlencode}}' target="_blank"><i class="fab fa-twitter tweet-this tweet-font"></i></a>
+    </div>
+  </div>
+  <br>
+  {% else %}
+    <p> Poll Expired </p>
+    <p>Check result <a class="tweet-this" href="/polls/result/?title={{poll.slugTitle}}&value={{poll.id}}">here</a class="tweet-this"></p> 
+  {% endif %}
+  
+  <a class="tweet-color" onclick="window.history.back()"><i class="fa fa-arrow-left"></i> go back</a>
+</div>
+<script>
+$("#sharePage").click(function(){
+    let share_id = "{{poll.id}}"
+    let app = "polls"
+    let content_owner = "{{poll.user.id}}"
+    let ask = confirm("Are you sure you want to share this poll")
+    if(ask){
+        posts({app, share_id, content_owner}, "/forum/share/")
+        alert("Thanks for sharing this poll, it makes other people aware of the poll")
+    }
+                    
+})
+
+
+let toggleBool = false  
+$("#shareToggle").click(function(){
+    if(!toggleBool){
+      $("#hideSocialIcons").css('display', "flex")
+      toggleBool = !toggleBool
+    }
+    else{
+      $("#hideSocialIcons").css('display', "none")
+      toggleBool = !toggleBool
+     
+    }
+})
+
+  $('#fav_thread').click(function(){
+    if($(this).attr("bool") == "false"){
+    let thread_id = Number($(this).attr("data"))
+    category = "poll"
+    title = "{{poll.title}}"
+    let app = "poll"
+    let toggleBool = "True"
+    posts({href: window.location.href, thread_id: thread_id, title, app, category, toggleBool}, "/forum/favourite/")
+    $(this).attr("bool", "true")
+    $(this).css("color", "orange")
+    }
+    else{
+        let thread_id = Number($(this).attr("data"))
+        $(this).attr("bool", "false")
+        $(this).css("color", "transparent")
+        let category = "poll"
+        let title = "{{poll.title}}"
+        let app = "poll"
+        let toggleBool = ""
+        posts({href: window.location.href, thread_id: thread_id, title, category, app, toggleBool}, "/forum/favourite/")
+    }
+
+}) 
+</script>
+{% endblock %}

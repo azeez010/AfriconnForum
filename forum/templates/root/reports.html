@@ -1,0 +1,34 @@
+{% extends "forum/base.html" %}
+{% load filterdata %}
+{% block title %}Profile - {{user.username}}{% endblock %}
+{% block content %}
+{% load humanize %}
+{% if user.is_superuser %}
+<h1>Report</h1>
+    {% for report in reports %}
+    <div class="allCard">   
+        {% if report.thread_id %}
+        <p class="tweet-color">Thread</p>
+        {% endif %}
+    {% if report.comment_id %} 
+        <p class="tweet-color">Comment</p>    
+    {% endif %}
+            <p class="contentTitle">{{ object.title }}</p>
+            <p>{{ report.report_time|naturaltime}}</p>
+            <p class="contentInfo">reported by <i class="fa fa-user"></i> {{reportUser|getuserdata:report.reporter}}</p>
+            <p class="contentInfo">rule broken: {{ report.rule_broken }}</p> 
+            <p class="contentInfo"><b>Report</b><br> {{ report.report }}</p>
+            <p class="contentInfo">type: {{ report.report_type}}</p> 
+        {% if report.thread_id %}
+            <button ><a class="btnColor" href="/reports/{{ report.report_type }}/{{report.thread_id}}/">details</a> </button>
+        {% endif %}
+        {% if report.comment_id %}
+            <button><a class="btnColor" href="/reports/{{ report.report_type }}/{{ report.comment_id}}/">details</a> </button>
+        {% endif %}
+    </div>
+    {% endfor %}
+{% else %}
+    <p>You are nothing allowed to view this page</p>
+{% endif %}
+
+{% endblock %}

@@ -1,0 +1,14 @@
+{% extends "forum/base.html" %}
+{% block title %}report{% endblock %}
+{% block content %}
+{% load crispy_forms_tags %}
+
+{% if user.is_authenticated %}
+<h3>Report thread</h3>    
+<form action="/forum/report-thread/{{ thread_id }}/" method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        {{ form |crispy }}
+<input type="submit" value="post">
+    </form>
+{% endif %}
+{% endblock %}

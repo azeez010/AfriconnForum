@@ -1,0 +1,62 @@
+{% extends "forum/base.html" %}
+{% block title %}Login!{% endblock %}
+{% block content %}
+{% load crispy_forms_tags %}
+{% if user.is_authenticated %}
+    <p>You are Logged in, <a class="tweet-color" href="/forum/home/">Go home</a></p>
+{% else %}
+<div class="allCard">
+    <h1>Login</h1> 
+        <form id="loginForm" action="/signin/" method="post">
+            {% csrf_token %}
+                {{form|crispy }}
+            <input type="hidden" name="redirect" id="redirect">
+            <input id="loginSubmit" type="submit" value="submit">
+        </form>
+        <p>you don't have an account <a class="tweet-this" href="/forum/signup">sign-up</a></p>
+        <p><a class="tweet-this" href="{% url 'password_reset' %}">reset password</a></p>
+</div>
+        
+<script>
+    $("#div_id_password").append(`<span class="tweet-color showpassword">show</span>`)
+            $(".showpassword").click(function(){
+                if($(this).text() == "show"){
+                    $("#id_password").attr("type", "text")
+                    $(this).text("hide")
+                }
+                else{
+                    $("#id_password").attr("type", "password")
+                    $(this).text("show")
+                }
+            })
+
+                let register = sessionStorage.getItem("register")
+                if(register){
+                    $("#redirect").val('new')  
+                    sessionStorage.removeItem("register")          
+                }
+                else{
+                    let signupDetails = sessionStorage.getItem("payload")
+                    if(signupDetails){
+                        sessionStorage.removeItem("payload")
+                    }
+                    let redirect = sessionStorage.getItem("redirect")
+                    $("#redirect").val(redirect)
+                }
+
+let details = localStorage.getItem("payload")
+    if(details){
+        let data = JSON.parse(details)
+        $("#id_username").val(data.username)
+    }
+
+$("#loginForm").submit(function(event){
+    let username = $("#id_username").val()
+    let payload = JSON.stringify({username})
+    let storeDetails =  localStorage.setItem("payload", payload)
+    $("#submit").attr("disabled", true)
+})  
+</script>
+
+    {% endif %}
+{% endblock %}

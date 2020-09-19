@@ -1,0 +1,73 @@
+{% extends "forum/base.html" %}
+{% block title %}Signup!{% endblock %}
+{% block content %}
+{% load crispy_forms_tags %}
+<div class="allCard">
+    <h1>Sign Up</h1>
+        <form id="signup" method="post">
+            {% csrf_token %}
+            {% if ref %}
+                <input type="hidden" name="ref" value="{{ref}}">
+            {% endif %}
+            {{form|crispy}}
+            <input type="submit" id="submit" value="submit">
+        </form>
+        <p>you already have an account <a class="tweet-color" href="/login">login</a></p>
+</div>
+        <script>
+        let details = sessionStorage.getItem("payload")
+        if(details){
+            let data = JSON.parse(details)
+            $("#id_password1").val(data.password1)
+            $("#id_password2").val(data.password2)
+            $("#id_username").val(data.username)
+            $("#id_email").val(data.email)
+            $("#id_accept_terms").val(data.terms)
+            $("#id_first_name").val(data.first_name)
+            $("#id_last_name").val(data.last_name)
+        }
+        $("#div_id_password1").append(`<span class="tweet-color showp1">show</span>`)
+        $("#div_id_password2").append(`<span class="tweet-color showp2">show</span>`)
+        $("#div_id_accept_terms").append(`<span><a style="font-size: 14px" href="/info/#terms" class="tweet-color">read Term of use</a><span>`)
+        $(".showp1").click(function(){
+            if($(this).text() == "show"){
+                $("#id_password1").attr("type", "text")
+                $(this).text("hide")
+            }
+            else{
+                $("#id_password1").attr("type", "password")
+                $(this).text("show")
+            }
+        })
+
+        $(".showp2").click(function(){
+            if($(this).text() == "show"){
+                $("#id_password2").attr("type", "text")
+                $(this).text("hide")
+            }
+            else{
+                $("#id_password2").attr("type", "password")
+                $(this).text("show")
+            }
+        })
+
+        $("#submit").click(function(e){
+            
+            let password1 = $("#id_password1").val()
+            let password2 = $("#id_password2").val()
+            let username = $("#id_username").val()
+            let email = $("#id_email").val()
+            let terms = $("#id_accept_terms").val()
+            let last_name = $("#id_last_name").val()
+            let first_name = $("#id_first_name").val()
+            
+            let payload = JSON.stringify({username, password1, password2, email, terms, first_name, last_name})
+
+            let storeDetails =  sessionStorage.setItem("payload", payload)
+            let register = sessionStorage.setItem("register", true)
+            $("#signup").submit(function(event){
+                $("#submit").attr("disabled", true)
+            })  
+        })
+    </script>
+{% endblock %}

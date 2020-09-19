@@ -1,0 +1,216 @@
+{% extends "forum/base.html" %}
+{% block title %}Job - {{ getJob.title }}{% endblock %}
+{% load social_share %}
+{% load filterdata %}
+{% block desc %}{{getJob.name_of_company}} {{ getJob.details }}{% endblock %}
+{% block meta %}{{ getJob.title|keywords }}, {{getJob.name_of_company}}{% endblock %}
+{% block content %}
+<style>
+    #main-content{
+        background-color: white;
+    }
+    #jobPageCard{
+        background-color: white;
+        padding-left: 20px;
+        margin: auto auto;
+    }
+</style>
+
+<div id="jobPageCard">
+    <div>
+
+    <p class="contentTitle">{{ getJob.title }}
+        <!-- Toggle favourite for saving -->
+        {% if request.user.id == getJob.id %}
+            {% if fav|GetFav:getJob.id %}
+                <span><i data="{{ getJob.id }}" bool="true" class="fa fa-star angry-checked" id="fav_Job"></i></span>
+                {% else %}
+                <span><i data="{{ getJob.id }}" bool="false" class="fa fa-star angry-unchecked" id="fav_Job"></i></span>
+            {% endif %} 
+        {% endif %}
+    </p>
+    <p>{{ getJob.name_of_company }}</p>
+    {% if getJob.jobImage %}
+        <img class="jobImageMain" src="{{ getJob.jobImage.url }}" alt="">
+    {% else %}
+        <img class="jobImageMain" src="/static/jobs.gif" alt="">
+    {% endif %}
+    
+    <h1 class="contentTitle">Description</h1>
+    <p style="text-align: left;">{{ getJob.details|safe|urlFilter }} </p>
+   {% if getJob.pay %}
+        <h1 class="contentTitle">Pay</h1>
+        <p style="text-align: left;"><del style="text-decoration-style: double; text-decoration: line-through">N</del>{{ getJob.pay }} </p>
+    {% endif %}
+    
+    <h1 class="contentTitle">Category</h1>
+    <p style="text-align: left;">{{ getJob.category }} </p>
+
+    <h1 class="contentTitle">Created on</h1>
+    <p style="text-align: left;">{{ getJob.datetime }} </p>
+    
+    <h1 class="contentTitle">Position</h1>
+    <p style="text-align: left;">{{ getJob.position }} </p>
+
+
+</div>
+
+    {% if user.is_authenticated %}
+        {% if user.id == getJob.user.id%}
+            <p><a class="reddit-this" href="/jobs/applicant/?title={{ getJob.slugTitle }}&value={{ getJob.id }}">{{getJob.user.username}} click here to check your Applicants</a></p> 
+            <p><a class="tweet-this" href="/jobs/yourjobs/">see your jobs</a></p>
+        {% else%}
+        <h1 class="contentTitle">Apply</h1>
+            <form method="POST" enctype="multipart/form-data" action="/jobs/jobpage/?title={{getJob.slugTitle}}&value={{getJob.id}}">
+                {% csrf_token %}    
+                <input type="file" name="files" id="id_files" accept="application/pdf">
+                {{ applyform.as_p }}
+                <input type="submit" value="apply">
+            </form>
+            <p id="resume"><a href="/jobs/resume/" target="_blank" class="tweet-color"><i class="fa fa-pen"></i> click here to make a resume, to apply for the job</a></p>
+        {% endif %}
+    {% else%}
+        <p><a class="tweet-this" href="/login">login to apply</a></p>
+    {% endif %}
+    <br>
+    <div class="threadCard">
+        <div class="author-img">
+        {% if getJob.user.profile.profile_pic %}
+            <img src="{{ getJob.user.profile.profile_pic.url }}" id="authorImage"  alt="{{ getJob.title}} image">
+            {% else %}
+            <div id="authorDefaultImage">{{ getJob.user.username|default_pic }}</div>
+        {% endif %}   
+        </div>
+        <div>
+            <p style="font-size: 18px; font-weight: 900; margin-top: 0">Job Post by</p>
+            <p style="margin-top: 0" class="author-about spacing-bottom "><a class="no-mb tweet-this" href="/profile/{{getJob.user.username}}/">{{getJob.user.username}}</a></p>
+            <p style="margin-top: 0" class="author-about no-mb spacing-bottom">{{getJob.user.profile.about|urlFilter}}</p>
+        </div>
+    </div>
+
+<br>
+<p  id="shareToggle" style="text-align: left; font-size: 20px;">Share Job</p>
+<div style="margin-top: 5px; text-align: left;" bool="False" id="hideSocialIcons">
+    <img style="width: 30px; height: 30px; margin-right: 5px" src="/static/aflight.gif" id="sharePage" alt="africonn icon"> 
+    <div class="allicons">
+        <a href='https://www.facebook.com/sharer/sharer.php?u=http://afrikas.herokuapp.com{{request.get_full_path}}' target="_blank"><i class="fab fa-facebook facebook-this facebook-font"></i></a>
+    </div>
+    <div class="allicons">
+        <a href='https://www.reddit.com/submit?title={{getJob.title}}&url=http://afrikas.herokuapp.com{{request.get_full_path|urlencode}}' target="_blank"><i class="fab fa-reddit reddit-this reddit-font"></i></a>
+    </div>
+    <div class="allicons">
+        <a href='https://wa.me/?text={{getJob.title}} http://afrikas.herokuapp.com{{request.get_full_path|urlencode}}' target="_blank"><i class="fab fa-whatsapp whatsapp-this whatsapp-font"></i></a>
+    </div>
+    <div class="allicons">
+        <a href='https://twitter.com/intent/tweet?text={{getJob.title}} http://afrikas.herokuapp.com{{request.get_full_path|urlencode}}' target="_blank"><i class="fab fa-twitter tweet-this tweet-font"></i></a>
+    </div>
+</div>
+
+<h1 style="text-align: left;" class="contentTitle contentTitleColor">More Job</h1>
+
+{% for job in recommendation %}
+<div class="jobCard">
+    <div class="jobImg">
+        {% if job.jobImage %}
+            <img class="jobImage" src="{{job.jobImage.url}}" alt="">
+            {% else %}
+            <img class="jobImage" src="/static/jobs.gif" alt="">
+        {% endif %}
+    </div>
+    <div class="jobInfo">
+        <a class="contentTitle spacing" href="/jobs/jobpage/?title={{job.slugTitle}}&value={{ job.id }}">{{ job.title }}</a>
+            {% if fav|GetFav:job.id and fav|GetFav:job.id == request.user.id  %}
+                <i data="{{ job.id }}" category="{{job.category}}" title="{{job.title}}" bool="true" class="fa fa-star angry-checked fav_Job"></i>
+                {% else %}
+                <i data="{{ job.id }}"category="{{job.category}}" title="{{job.title}}"  bool="false" class="fa fa-star angry-unchecked fav_Job" ></i>
+            {% endif %}
+
+        <p class="contentDetail"><b>{{ job.name_of_company }}</b></p>
+        <p class="contentDetail">{{ job.details | safe |trunc}}</p>
+        <span>{{ job.category }}</span>
+        <br>
+        <div class="spacing-bottom">
+            <span class="contentInfo"><i class="fa fa-clock contentIcon"></i><i class="fa fa-bag contentIcon"></i> {{ job.datetime|blogDate }} </span>
+            <span class="contentInfo"><i class="fa fa-user contentIcon"></i> {{ job.user.username }} </span>
+        </div>
+        <span>{{job.pay}}</span>
+        <span>{{ job.position }}</span>
+        <br>
+    </div>
+</div>
+{% endfor %}
+</div>
+
+<script>
+$("#sharePage").click(function(){
+    let share_id = "{{getJob.id}}"
+    let app = "job"
+    let content_owner = "{{getJob.user.id}}"
+    let ask = confirm("Are you sure you want to share this job post")
+    if(ask){
+        posts({app, content_owner, share_id}, "/forum/share/")
+        alert("Thanks for sharing this job post it could really go a long way")
+    }
+                    
+})
+
+$("#resume").click(function(){
+    let path = "{{request.get_full_path}}"
+    path = path.replace("&amp;", "&")
+    sessionStorage.setItem("jobredirect", path)
+    })    
+
+$('#fav_Job').click(function(){
+    if($(this).attr("bool") == "false"){
+        let thread_id = Number($(this).attr("data"))
+        category = "{{getJob.category}}"
+        title = "{{getJob.title}}"
+        let app = "job"
+        let toggleBool = "True"
+        posts({href: window.location.href, thread_id: thread_id, title, app, category, toggleBool}, "/forum/favourite/")
+        $(this).attr("bool", "true")
+        $(this).css("color", "orange")
+    }
+    else{
+        let thread_id = Number($(this).attr("data"))
+        $(this).attr("bool", "false")
+        $(this).css("color", "transparent")
+        let category = "{{getJob.category}}"
+        let title = "{{getJob.title}}"
+        let app = "job"
+        let toggleBool = ""
+        posts({href: window.location.href, thread_id: thread_id, title, category, app, toggleBool}, "/forum/favourite/")
+    }
+}) 
+</script>
+
+<script>
+    let fav = $('.fav_Job').length
+        for(let i = 0; i < fav; i++){
+            $('.fav_Job').eq(i).click(function(){
+                if($(this).attr("bool") == "false"){
+                    let thread_id = Number($(this).attr("data"))
+                    category = $(this).attr("category")
+                    title = $(this).attr("title")
+                    let app = "job"
+                    let toggleBool = "True"
+                    posts({href: window.location.href, thread_id: thread_id, title, app, category, toggleBool}, "/forum/favourite/")
+                    $(this).attr("bool", "true")
+                    $(this).css("color", "orange")
+                }
+                else{
+                    let thread_id = Number($(this).attr("data"))
+                    $(this).attr("bool", "false")
+                    $(this).css("color", "transparent")
+                    category = $(this).attr("category")
+                    let title = $(this).attr("title")
+                    let app = "job"
+                    let toggleBool = ""
+                    posts({href: window.location.href, thread_id: thread_id, title, category, app, toggleBool}, "/forum/favourite/")
+                }
+            }) 
+            
+        } 
+        </script>
+    
+{% endblock %}

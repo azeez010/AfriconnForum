@@ -1,0 +1,58 @@
+{% extends "forum/base.html" %}
+{% block title %}Africonn - author dashboard {% endblock %}
+{% block content %}
+{% load  humanize %}
+{% load filterdata %}
+{% block desc %}{{ getBlog.details }}{% endblock %}
+{% block meta %}{{ getBlog.title|keywords }}{% endblock %}
+{% load social_share %}
+<style>
+    #container{
+        background-color: white;
+    }
+    #main-content{
+        background-color: white;
+        padding-left: 10px;
+    }
+</style>
+<p class="contentTitle author-light-color">Authors dashboard</p>
+
+<div class="blogInfo">
+    <p class="contentTitle spacing">{{ getBlog.title }}</p>
+    <span class="contentInfo"><i class="fa fa-clock contentIcon"></i> {{ getBlog.datetime|blogDate }} </span>
+    <span class="contentInfo"><i class="fa fa-user contentIcon"></i> {{ getBlog.user.username }} </span>
+    <span class="contentInfo"><i class="fa fa-book contentIcon"></i> {{ getBlog.title|blogReadTime }} min read </span>
+    
+    {% if getBlog.image %}
+        <img src="{{ getBlog.image.url }}" class="blogI" alt="{{ getBlog.title}} image">
+    {% endif %}
+    <p class="blogDetails spacing">{{ getBlog.details|safe|urlFilter }}</p>
+</div>
+<br>
+<p><b>Share blog</b></p>
+<div class="socialIcons">
+    <div class="allicons">
+        <a href='https://www.facebook.com/sharer/sharer.php?u=http://afrikas.herokuapp.com{{request.get_full_path}}' target="_blank"><i class="fab fa-facebook facebook-this facebook-font"></i></a>
+    </div>
+    <div class="allicons">
+        <a href='https://www.reddit.com/submit?title={{getBlog.title}}&url=http://afrikas.herokuapp.com{{request.get_full_path|urlencode}}' target="_blank"><i class="fab fa-reddit reddit-this reddit-font"></i></a>
+    </div>
+    <div class="allicons">
+        <a href='https://wa.me/?text={{getBlog.title}} http://afrikas.herokuapp.com{{request.get_full_path|urlencode}}' target="_blank"><i class="fab fa-whatsapp whatsapp-this whatsapp-font"></i></a>
+    </div>
+    <div class="allicons">
+        <a href='https://twitter.com/intent/tweet?text={{getBlog.title}} http://afrikas.herokuapp.com{{request.get_full_path|urlencode}}' target="_blank"><i class="fab fa-twitter tweet-this tweet-font"></i></a>
+    </div>
+</div>
+
+<button style="background: green"><a href="/blog/author-update/{{getBlog.id}}/" style="color: white"><i style="color: white" class="fa fa-arrow-up"></i> update</a></button> <button style="background: red" id="delete"><a style="color: white"><i  class="fa fa-trash"></i> delete</a></button>
+<br>
+
+<p onclick="window.history.back()" class="tweet-color"><i class="fa fa-arrow-left"></i> go back</p>
+<script>
+    $("#delete").click(function(){
+        let choice = confirm("are you sure you want to delete")
+        if(choice) return window.location.href = "/blog/author-delete/{{getBlog.id}}/"
+    })
+</script>
+{% endblock %}

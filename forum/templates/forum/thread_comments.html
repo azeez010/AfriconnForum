@@ -1,0 +1,86 @@
+{% extends "forum/base.html" %}
+{% block title %}Replies - Afrikaz{% endblock %}
+{% block content %}
+{% load humanize %}
+{% load filterdata %}
+
+{% if user.is_authenticated %}
+{% endif %}
+
+{% if Thread.count == 0 %}
+    <p>No active thread</p>
+{% else %}
+
+<h1>Active thread{{Thread.count|pluralize}}</h1>
+    {% for newThreadComment in Thread|dictsortreversed:"thread.datetime" %}
+        {% if newThreadComment.is_seen == False %}
+        <div class="threadCard">  
+            <div>
+                {% if newThreadComment.thread.user.profile.profile_pic %}
+                    <img class="usericon" src="{{newThreadComment.thread.user.profile.profile_pic.url}}" alt="">
+                {% else %}
+                    <div class="default_pic">{{newThreadComment.thread.user.username|default_pic}}</div>
+                    {% endif %}
+            </div>   
+            <div class="threadInfo">
+                <span data="{{newThreadComment.thread_id}}" class="cancel-thread">&times;</span>
+                <p style="margin-bottom: 0px"><a href="/profile/{{newThreadComment.thread.user.username}}/" class="contentInfo">{{ newThreadComment.thread.user.username }} </a></p>                
+                <p style="margin-bottom: 0px; margin-top: 5px;"><a class="contentTitle" href="/forum/thread/?hamlet={{ newThreadComment.thread.thread_category.id }}&slug={{ newThreadComment.thread.threadSlug }}&thread_no={{ newThreadComment.thread.id }}">{{ newThreadComment.thread.title }}</a></p>
+                <span class="contentInfo"><i class="fa fa-heart contentIcon"></i> {{ newThreadComment.thread.thread_like_set.all|likenum:"True" }}</span>
+                <span class="contentInfo"><i class="fa fa-angry contentIcon"></i> {{ newThreadComment.thread.thread_like_set.all|dislikenum:"True" }}</span>
+                <span class="contentInfo"><i class="fa fa-newspaper contentIcon"></i> {{ newThreadComment.thread.thread_category.title }}  </span>                 
+                <span class="contentInfo" ><i class="fa fa-newspaper contentIcon"></i><a class="contentInfo" href="/forum/hamlet/{{ newThreadComment.thread.thread_category.title}}/{{ newThreadComment.thread.thread_category.id}}/">{{ newThreadComment.thread.thread_category.title}}</a>   </span>
+            
+                {% if reply.is_seen == False %}
+                  <span class="new_threads">New! </span>
+                {% endif %}
+                <div class="spacing-bottom">
+                  <span class="contentInfo"><i class="fa fa-clock contentIcon"></i> {{ newThreadComment.thread.created_at|forumDate }} </span>
+                  <span class="contentInfo"><i class="fa fa-eye contentIcon"></i>  {{newThreadComment.thread.views}} </span>
+                  <span class="contentInfo"><i class="fa fa-comment contentIcon"></i> {{newThreadComment.thread.comment_set.all.count}}</span>
+                </div>
+
+            </div>
+           </div>
+        {% else%}  
+        <div class="threadCard">  
+            <div>
+                {% if newThreadComment.thread.user.profile.profile_pic %}
+                    <img class="usericon" src="{{newThreadComment.thread.user.profile.profile_pic.url}}" alt="">
+                {% else %}
+                    <div class="default_pic">{{newThreadComment.thread.user.username|default_pic}}</div>
+                    {% endif %}
+            </div>   
+            <div class="threadInfo">
+                <span data="{{newThreadComment.thread_id}}" class="cancel-thread">&times;</span>
+                <p style="margin-bottom: 0px"><a href="/profile/{{newThreadComment.thread.user.username}}/" class="contentInfo">{{ newThreadComment.thread.user.username }} </a></p>                
+                <p style="margin-bottom: 0px; margin-top: 5px;"><a class="contentTitle" href="/forum/thread/?hamlet={{ newThreadComment.thread.thread_category.id }}&slug={{ newThreadComment.thread.threadSlug }}&thread_no={{ newThreadComment.thread.id }}">{{ newThreadComment.thread.title }}</a></p>
+                <span class="contentInfo"><i class="fa fa-heart contentIcon"></i> {{ newThreadComment.thread.thread_like_set.all|likenum:"True" }}</span>
+                <span class="contentInfo"><i class="fa fa-angry contentIcon"></i> {{ newThreadComment.thread.thread_like_set.all|dislikenum:"True" }}</span>
+                <span class="contentInfo" ><i class="fa fa-newspaper contentIcon"></i><a class="contentInfo" href="/forum/hamlet/{{ newThreadComment.thread.thread_category.title}}/{{ newThreadComment.thread.thread_category.id}}/">{{ newThreadComment.thread.thread_category.title}}</a>   </span>
+            
+                <div class="spacing-bottom">
+                  <span class="contentInfo"><i class="fa fa-clock contentIcon"></i> {{ newThreadComment.thread.created_at|forumDate }} </span>
+                  <span class="contentInfo"><i class="fa fa-eye contentIcon"></i>  {{newThreadComment.thread.views}} </span>
+                  <span class="contentInfo"><i class="fa fa-comment contentIcon"></i> {{newThreadComment.thread.comment_set.all.count}}</span>
+                </div>
+
+            </div>
+           </div>
+        {% endif %}
+    {% endfor %}
+{% endif %}
+
+<script>
+    let cancel = $(".cancel-thread").length        
+for(let i = 0; i < cancel; i++ ){
+     $('.cancel-thread').eq(i).click(function(){
+        let thread_seen_id = Number($(this).attr("data"))
+        $(this).parent().parent().remove()
+        posts({thread_seen_id}, "/forum/update-seen-thread/")
+    })
+
+}
+
+</script>
+{% endblock %}

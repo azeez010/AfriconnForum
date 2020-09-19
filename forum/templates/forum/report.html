@@ -1,0 +1,13 @@
+{% extends "forum/base.html" %}
+{% block title %}report{% endblock %}
+{% block content %}
+{% load crispy_forms_tags %}
+
+{% if user.is_authenticated %}   
+<form action="/forum/report/{{ comment_id }}/" method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        {{ form |crispy }}
+<input type="submit" value="post">
+    </form>
+{% endif %}
+{% endblock %}

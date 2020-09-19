@@ -1,0 +1,25 @@
+{% extends "forum/base.html" %}
+{% block title %}Africonn Create Jobs{% endblock %}
+{% block content %}
+{% load crispy_forms_tags %}
+
+{% if user.is_authenticated %}
+<div class="allCard">
+    <h1>Create Job</h1> 
+    <form id="form" action="/jobs/create/" method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        <!-- {{job.media}} -->
+        {{job|crispy}}
+        
+        <input type="hidden" name="tags" id="tags">
+        <input type="submit" id="mySubmitButton" value="submit">
+    </form>
+</div>
+<script>
+    $('#form').submit(function(event) {
+        $('#mySubmitButton').attr('disabled', true);
+});
+</script>
+
+{% endif %}
+{% endblock %}

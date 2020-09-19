@@ -1,0 +1,80 @@
+{% extends "forum/base.html" %}
+{% block title %}African community Jobs - Africonn {% endblock %}
+{% load filterdata %}
+{% block content %}
+<a style="color: {{theme_color}}">Popular categories</a> 
+<a class="homeList" href="/jobs/joblist/?category=artisans">Artisans</a>
+<a class="homeList" href="/jobs/joblist/?category=gigs">Gigs</a>
+<a class="homeList" href="/jobs/joblist/?category=finance">finance</a>
+<a class="homeList" href="/jobs/joblist/?category=programming">programming</a>
+<a class="homeList" href="/jobs/joblist/?category=graphic_designers">Graphic designers</a>
+<a class="homeList" href="/jobs/joblist/?category=others">others</a>
+
+
+<h1>New!</h1>
+{% for job in getJob %}
+<div class="jobCard">
+    <div class="jobImg">
+        {% if job.jobImage %}
+            <img class="jobImage" src="{{job.jobImage.url}}" alt="">
+            {% else %}
+            <img class="jobImage" src="/static/jobs.gif" alt="">
+        {% endif %}
+    </div>
+    <div class="jobInfo">
+        <a class="contentTitle spacing" href="/jobs/jobpage/?title={{job.slugTitle}}&value={{ job.id }}">{{ job.title }}</a>
+            {% if fav|GetFav:job.id and fav|GetFav:job.id == request.user.id %}
+                <i data="{{ job.id }}" category="{{job.category}}" title="{{job.title}}" bool="true" class="fa fa-star angry-checked fav_Job"></i>
+                {% else %}
+                <i data="{{ job.id }}"category="{{job.category}}" title="{{job.title}}"  bool="false" class="fa fa-star angry-unchecked fav_Job" ></i>
+            {% endif %}
+
+        <p class="contentDetail"><b>{{ job.name_of_company }}</b></p>
+        <p class="contentDetail">{{ job.details | safe |trunc}}</p>
+        <span>{{ job.category }}</span>
+        <br>
+        <div class="spacing-bottom">
+            <span class="contentInfo"><i class="fa fa-clock contentIcon"></i><i class="fa fa-bag contentIcon"></i> {{ job.datetime|blogDate }} </span>
+            <span class="contentInfo"><i class="fa fa-user contentIcon"></i> {{ job.user.username }} </span>
+        </div>
+        <br>
+    </div>
+</div>
+{% endfor %}
+{% if user.is_authenticated %}
+<a href="/jobs/create/"><i class="fa fa-pen"></i> create job</a>
+<a href="/jobs/yourjobs/"><i class="fa fa-newspaper"></i>your jobs</a>
+<a class="tweet-color" href="/jobs/resume/"><i class="fa fa-book"></i>make resume</a>
+{% endif %}
+<script>
+    let fav = $('.fav_Job').length
+    for(let i = 0; i < fav; i++){
+        $('.fav_Job').eq(i).click(function(){
+            if($(this).attr("bool") == "false"){
+                let thread_id = Number($(this).attr("data"))
+                category = $(this).attr("category")
+                title = $(this).attr("title")
+                let app = "job"
+                let toggleBool = "True"
+                posts({href: window.location.href, thread_id: thread_id, title, app, category, toggleBool}, "/forum/favourite/")
+                $(this).attr("bool", "true")
+                $(this).css("color", "orange")
+            }
+            else{
+                let thread_id = Number($(this).attr("data"))
+                $(this).attr("bool", "false")
+                $(this).css("color", "transparent")
+                let category = "{{getJob.category}}"
+                let title = "{{getJob.title}}"
+                let app = "job"
+                let toggleBool = ""
+                posts({href: window.location.href, thread_id: thread_id, title, category, app, toggleBool}, "/forum/favourite/")
+            }
+        }) 
+        
+    } 
+    </script>
+    
+
+
+{% endblock %}

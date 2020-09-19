@@ -1,0 +1,695 @@
+{% extends "forum/base.html" %}
+{% load filterdata %}
+{% block desc %}{{ thread.recommendation }}{% endblock %}
+{% block meta %}{{ thread.title|keywords }}{% endblock %}
+{% block title %}Thread - {{ thread.title }}{% endblock %}
+{% block content %}
+{% load social_share %}
+{% load humanize %}
+{% load mathfilters %}
+
+<p class="contentTitle author-light-color">{{ thread.thread.thread_category.id }}</p>
+    <div class="allCard"> 
+        <div class="threadHeader">
+            <div>
+                {% if thread.user.profile.profile_pic %}
+                    <img class="usericon" src="{{thread.user.profile.profile_pic.url}}" alt="">
+                {% else %}
+                    <div id="authorDefaultImage">{{thread.user.username|default_pic}}</div>
+                {% endif %}
+                
+            </div>   
+            <div>
+                <a style="margin-left: 5px" href="/profile/{{thread.user.username}}/" class="contentInfo">{{ thread.user.username }} </a> 
+                <p class="contentInfo">{{thread.user.first_name}} {{thread.user.last_name}}</p>
+            </div>
+        </div> 
+        <!-- <div> -->
+        <div>
+            <p><a class="contentTitle" href="/forum/thread/?hamlet={{ thread.thread_category.id }}&slug={{ thread.threadSlug }}&thread_no={{ thread.id }}">{{ thread.title }}</a></p>            
+            <p class="contents">{{ thread.details | urlFilter | colorInvites | safe }} </p>
+
+            {% if thread.image %}
+                <img src="{{ thread.image.url }}" height="{{thread.image.height|div:2}}" width="100%" srcset="" alt="" srcset="">
+                {% endif %}
+        </div>
+        
+        <div class="spacing-bottom">
+            <span class="contentInfo"><i class="fa fa-newspaper contentIcon"></i> {{ thread.thread_category.id }}  </span>
+              <span class="contentInfo"><i class="fa fa-clock contentIcon"></i> {{ thread.created_at|naturaltime }} </span>
+              <!-- <a href="/profile/{{thread.user.username}}/" class="contentInfo"><i class="fa fa-user contentIcon"></i> {{ thread.user.username }} </a> -->
+            </div>
+            
+        {% if user.is_authenticated and not user.ban.on_ban %}
+            {% with t=thread.thread_like_set.all|getdata:user.id %}
+            {% with did_you_like=thread.thread_like_set.all|likenum:"True"%}
+            {% with did_you_hate=thread.thread_like_set.all|dislikenum:"True"%}
+            
+                         {% if t.each_like == True %}
+                            <span><i data="{{ thread.id }}" button="like" bool="true" class="fa fa-heart heart-checked like_thread"></i></span><span id="likeText"> {{ did_you_like | numba_of_views }}</span>
+                
+                        {% else %}
+                            <span><i data="{{ thread.id }}" button="like" bool="false" class="fa fa-heart heart-unchecked like_thread"></i></span><span id="likeText"> {{ did_you_like | numba_of_views}}</span>
+                        {% endif %}
+                        
+                        {% if t.each_dislike == True %}
+                            <span><i data="{{ thread.id }}" button="hate" bool="true" class="fa fa-angry angry-checked dislike_thread"></i></span><span id="hateText"> {{ did_you_hate | numba_of_views}}</span>
+                        {% else %}
+                                <span><i data="{{ thread.id }}" button="hate" bool="false" class="fa fa-angry angry-unchecked dislike_thread"></i></span><span id="hateText"> {{ did_you_hate | numba_of_views}}</span>
+                        {% endif %}
+                        
+                        <!-- <i data="{{ thread.id }}" bool="false" class="fa fa-star angry-unchecked" id="fav_thread"></i> -->
+                        {% if fav_bool %}
+                            <i data="{{ thread.id }}" bool="true" class="fa fa-star angry-checked" id="fav_thread"></i>
+                        {% else %}
+                            <i data="{{ thread.id }}" bool="false" class="fa fa-star angry-unchecked" id="fav_thread"></i>
+                        {% endif %} 
+                        <!-- only author can edit -->
+                        {% if user.id == thread.user.id %}
+                            <a class="contentInfo" href="/forum/thread/{{thread.id}}/update"><i class="fa fa-pencil-alt contentInfo"></i>edit</a>
+                        {% endif %}
+                        <!-- other except author/user -->
+                        {% if user.id != thread.user.id %}
+                            <a class="contentInfo" href="/forum/report-thread/{{thread.id}}/"><i class="fa fa-flag contentInfo"></i> report</a>
+                        {% endif %}
+                    {% endwith %}
+                {% endwith %}
+            {% endwith %}
+            <span id="shareToggle">Share</span>
+            <div bool="False" id="hideSocialIcons">
+                <img style="width: 30px; height: 30px; margin-right: 5px" src="/static/aflight.gif" id="sharePage" alt="africonn icon">
+                <div class="allicons">
+                    <a href='https://www.facebook.com/sharer/sharer.php?u=http://afrikas.herokuapp.com{{request.get_full_path}}' target="_blank"><i class="fab fa-facebook facebook-this facebook-font"></i></a>
+                </div>
+                <div class="allicons">
+                    <a href='https://www.reddit.com/submit?title={{thread.title}}&url=http://afrikas.herokuapp.com{{request.get_full_path|urlencode}}' target="_blank"><i class="fab fa-reddit reddit-this reddit-font"></i></a>
+                </div>
+                <div class="allicons">
+                    <a href='https://wa.me/?text={{thread.title}} http://afrikas.herokuapp.com{{request.get_full_path|urlencode}}' target="_blank"><i class="fab fa-whatsapp whatsapp-this whatsapp-font"></i></a>
+                </div>
+                <div class="allicons">
+                    <a href='https://twitter.com/intent/tweet?text={{thread.title}} http://afrikas.herokuapp.com{{request.get_full_path|urlencode}}' target="_blank"><i class="fab fa-twitter tweet-this tweet-font"></i></a>
+                </div> 
+            </div>
+
+            {% if thread.user.id == user.id or user.is_superuser %}
+                <button id="push_thread">push to front page</button>
+            {% endif %} 
+    
+        {% endif %}
+     </div>        
+
+    {% for comment in comments %}
+    <div class="allCard" id="{{comment.id}}">     
+        <div class="threadHeader">
+            <div>
+                {% if comment.user.profile.profile_pic %}
+                    <img class="usericon" src="{{comment.user.profile.profile_pic.url}}" alt="">
+                {% else %}
+                    <div id="authorDefaultImage">{{comment.user.username|default_pic}}</div>
+                {% endif %}
+                
+            </div>   
+            <div>
+                <a href="/profile/{{comment.user.username}}/" style="margin-left: 5px" class="contentInfo">{{ comment.user.username }} </a><br>
+                <span class="contentInfo"><i class="fa fa-clock contentIcon"></i> {{ comment.datetime|naturaltime }} </span>
+            </div>
+        </div>
+       
+       <div class="comment-content">
+        <p class="contents">{{ comment.comment | urlFilter | colorInvites | safe }} </p>
+        <p>{% with t=comment.like_dislike_set.all|getdata:user.id %}</p>
+            {% if comment.image %}
+                <img src="{{ comment.image.url }}" alt="comment image" height="{{comment.image.height|div:2}}" width="100%" srcset="">
+            {% endif %}
+               <!-- class="comment-contents-image" -->
+                  
+        {% if user.is_authenticated and not user.ban.on_ban %}
+            {% if t.each_like == True %}
+                <span><i author="{{ comment.user_id }}" button="like" bool="true" data="{{ comment.id }}"class="like_comment fa fa-heart heart-checked"></i></span><span class="commentLikeText"> {{ comment.like_dislike_set.all|likenum:"True" | numba_of_views }}</span> 
+            {% else %}
+                <i author="{{ comment.user_id }}" button="like" bool="false" data="{{ comment.id }}"class="like_comment fa fa-heart heart-unchecked"></i></span><span class="commentLikeText"> {{ comment.like_dislike_set.all|likenum:"True" | numba_of_views }}</span>
+            {% endif %}
+
+            {% if t.each_dislike == True %}
+                <span><i author="{{ comment.user_id }}" button="hate" data="{{ comment.id }}" bool="true" class="fa fa-angry angry-checked dislike_comment"></i></span><span class="commentDislikeText"> {{ comment.like_dislike_set.all|dislikenum:"True" | numba_of_views }}</span>
+            {% else %}
+                <span><i author="{{ comment.user_id }}" button="hate" data="{{ comment.id }}" bool="false" class="fa fa-angry angry-unchecked dislike_comment"></i></span><span class="commentDislikeText"> {{ comment.like_dislike_set.all|dislikenum:"True" | numba_of_views }}</span>
+            {% endif %}
+        {% endif %}
+{% endwith %}
+
+        <p class="showReplys">replies <span class="no_of_reply">{{ comment.reply_set.all.count | numba_of_views}}</span></p>
+        <!-- class="showReplys"     -->
+        {% if user.is_authenticated and not user.ban.on_ban %}        
+        <div class="replyDiv" style="display: none;">
+                    <input type="text" name="" placeholder="reply.." class="replyMessage">
+                    <button sender="{{comment.user.id}}" comment_id="{{comment.id}}" class="replyBtn">Send</button>
+                </div>
+                {% endif %}
+        {% if user.is_authenticated and not user.ban.on_ban %} 
+                <span toggle="true" style="cursor: pointer;"  class="reply contentInfo"><i class="fa fa-reply"></i> reply</span>
+                <!-- others except user -->
+                {% if user.id != comment.user.id %}
+                    <span><a class="contentInfo" href="/forum/report/{{ comment.id }}"><i class="fa fa-flag"></i>report</a></span>
+                {% endif %}            
+                <!-- user only -->
+                {% if user.id == comment.user.id %}
+                    <span><a class="contentInfo" href="/forum/comment/{{ comment.id }}/update"><i class="fa fa-pencil-alt"></i>edit</a></span>
+                {% endif %}            
+            {% endif %}
+
+            
+    </div>
+</div> 
+<!-- The perfect place for the reply div -->
+<div style="display: none"  data="{{comment.id}}" toggle="false" class="showReplysDiv"></div>
+<!-- report comment -->
+           {% endfor %}
+         
+           <!--  Paginated comments -->
+           
+{% if comments.paginator.num_pages != 1%}        
+{% if comments.number > 5%}  
+<div class="other_page"><a href="?hamlet={{thread.thread_category.id}}&slug={{thread.threadSlug}}&thread_no={{thread.id}}&page=1">1</a></div>
+<span class="other_page_dot">...</span>
+{% endif %}    
+  {% for pages in comments.paginator.page_range %}
+      {% if pages ==  comments.number %}
+      <div class="current_page"><a style="color: white;"  href="?hamlet={{thread.thread_category.id}}&slug={{thread.threadSlug}}&thread_no={{thread.id}}&page={{pages}}">{{pages}}</a></div>
+      {% else %}
+        {% if pages > comments.number|add:-5 and pages < comments.number|add:5  %}  
+              <div class="other_page"><a href="?hamlet={{thread.thread_category.id}}&slug={{thread.threadSlug}}&thread_no={{thread.id}}&page={{pages}}">{{pages}}</a></div>
+          {% endif %}
+      {% endif %}
+  {% endfor %}
+  {% if comments.number|add:4 < comments.paginator.num_pages %}  
+    <span class="other_page_dot">...</span>
+    <div class="other_page"><a href="?hamlet={{thread.thread_category.id}}&slug={{thread.threadSlug}}&thread_no={{thread.id}}&page={{comments.paginator.num_pages}}">{{ comments.paginator.num_pages }}</a></div>
+  {% endif %}  
+{% endif %}
+
+
+
+
+<br>
+<!-- user.is_authenticated and -->
+    {% if not user.ban.on_ban %}      
+        {% if user.is_authenticated %}
+            <p><a style="float: right;" href="/forum/comment/{{ thread.id }}"><i class="fa fa-pen"></i>comment</a></p>
+        {% else %}
+            <p><a style="float: right;" href="/login/?next=/forum/comment/{{ thread.id }}"><i class="fa fa-pen"></i>comment</a></p>
+        {% endif %}
+    {% endif %}
+        <p class="tweet-color" onclick="window.history.back()"> <i class="fa fa-arrow-left"></i>go back</p>
+            
+            <!-- recommendaation -->
+            {% if recommendations.count > 0 %}
+                <p class="contentTitle contentTitleColor">Threads you may like</p>
+                {% for recommendation in recommendations %}  
+                <div class="threadCard">         
+                    <div>
+                        {% if recommendation.user.profile.profile_pic %}
+                            <img class="usericon" src="{{recommendation.user.profile.profile_pic.url}}" alt="">
+                        {% else %}
+                            <div id="authorDefaultImage">{{recommendation.user.username|default_pic}}</div>
+                        {% endif %}
+                    </div>   
+                    <div>
+                        <a href="/profile/{{recommendation.user.username}}/" class="contentInfo">{{ recommendation.user.username }} </a>
+                        <p style="margin-bottom: 5px;"><a class="contentTitle" href="/forum/thread/?hamlet={{ recommendation.thread_category.id }}&slug={{ recommendation.threadSlug }}&thread_no={{ recommendation.id }}">{{ recommendation.title }}</a></p>
+                        <p class="threadSummary">{{recommendation.thread.details|urlFilter|safe|trunc}}</p>
+                        <span class="contentInfo"><i class="fa fa-heart contentIcon"></i> {{ recommendation.thread_like_set.all|likenum:"True" }}</span>
+                        <span class="contentInfo"><i class="fa fa-angry contentIcon"></i> {{ recommendation.thread_like_set.all|dislikenum:"True" }}</span>
+                        
+            <span class="contentInfo" ><i class="fa fa-newspaper contentIcon"></i><a class="contentInfo" href="/forum/hamlet/{{ recommendation.thread_category.title}}/{{ recommendation.thread_category.id}}/">{{ recommendation.thread_category.title}}</a>
+                        {% if recommendation.created_at|new_threads %}
+                        <span class="new_threads">New!</span>
+                        {% endif %}
+                        
+                        <div class="spacing-bottom">
+                        <span class="contentInfo"><i class="fa fa-clock contentIcon"></i>{{ recommendation.created_at|forumDate }} </span>
+                        <span class="contentInfo"><i class="fa fa-eye contentIcon"></i>{{recommendation.views}} </span>
+                        <span class="contentInfo"><i class="fa fa-comment contentIcon"></i>{{recommendation.comment_set.all.count}}</span>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        {% endif %}
+            </div>
+        </div>
+<script>
+    // replyCard
+    // alert("skills")
+// push thread to front page
+$("#push_thread").click(function(){
+    let choice = confirm("It costs {{ home_cost }} ADs to push to the front page for a day, do you want to proceed? ")
+    if(choice){
+        window.location.href = "/forum/push/?thread={{thread.id}}"
+    }
+})
+
+$("#sharePage").click(function(){
+    let share_id = "{{thread.id}}"
+    let content_owner = "{{thread.user.id}}"
+    let app = "forum"
+    let ask = confirm("Are you sure you want to share this post")
+    if(ask){
+        posts({app, share_id, content_owner}, "/forum/share/")
+        alert("Thanks for sharing this thread")
+    }
+                    
+})
+
+    let like = document.getElementsByClassName("like_comment")
+    let dislike= document.getElementsByClassName("dislike_comment")
+    for(let i = 0; i < like.length; i++){
+        like[i].onclick = () => {
+            if(like[i].getAttribute("bool") == "false"){// && dislike[i].getAttribute("bool") == "true"){
+                let comment_id = Number(like[i].getAttribute("data"))
+                let author = Number(like[i].getAttribute("author"))
+                if(dislike[i].getAttribute("bool") ===  "true"){
+                    dislike[i].style.color = "transparent"
+                    // get the number of hate text
+                    
+                    let hateText = Number($(".commentDislikeText").eq(i).text())
+                    hateText -= 1
+                    $(".commentDislikeText").eq(i).text(`${hateText}`)
+                
+                    let button = like[i].getAttribute("button") 
+                    dislike[i].style.webkitTextStroke = "1px rgba(253, 59, 0, 1)"
+                    posts({button, like: 1, dislike: 0, comment_id, author}, "/forum/like/")
+                    dislike[i].setAttribute("bool", "false")
+                }
+                let button = like[i].getAttribute("button") 
+                let likeText = Number($(".commentLikeText").eq(i).text())
+
+                likeText += 1
+                $(".commentLikeText").eq(i).text(`${likeText}`)
+
+                posts({button, like: 1, dislike: 0, comment_id, author}, "/forum/like/")
+                like[i].setAttribute("bool", "true")
+                like[i].style.color = "red"
+                dislike[i].style.webkitTextStroke = "1px rgba(253, 59, 0, 1)"
+                dislike[i].style.color = "transparent"
+                
+            }
+            else{
+                let comment_id = Number(like[i].getAttribute("data"))
+                let author = Number(like[i].getAttribute("author"))
+                like[i].setAttribute("bool", "false")
+                // decreasing like text
+                let likeText = Number($(".commentLikeText").eq(i).text())
+                likeText -= 1
+                $(".commentLikeText").eq(i).text(`${likeText}`)
+
+                like[i].style.color = "transparent"
+                like[i].style.webkitTextStroke = "1px red"
+                let button = like[i].getAttribute("button") 
+                posts({button, like: 0, dislike: dislike[i].getAttribute("bool") ===  "true"? 1 : 0 , comment_id, author}, "/forum/like/")
+                
+            }
+        }
+            dislike[i].onclick = () => {
+                if(dislike[i].getAttribute("bool") == "false"){
+                    if(like[i].getAttribute("bool") ===  "true"){
+                        like[i].style.color = "transparent"
+                        
+                        let likeText = Number($(".commentLikeText").eq(i).text())
+                        likeText -= 1
+                        $(".commentLikeText").eq(i).text(`${likeText}`)
+                        like[i].style.webkitTextStroke = "1px red"
+                        like[i].setAttribute("bool", "false")
+                    }
+                    
+
+                    let hateText = Number($(".commentDislikeText").eq(i).text())
+                    hateText += 1
+                    $(".commentDislikeText").eq(i).text(`${hateText}`)
+
+                    dislike[i].setAttribute("bool", "true")
+                    let comment_id = Number(dislike[i].getAttribute("data"))
+                    let author = Number(dislike[i].getAttribute("author"))
+                    let button = dislike[i].getAttribute("button") 
+                    dislike[i].style.color = "yellow"
+                    posts({like: 0, dislike: 1, comment_id, author, button}, "/forum/like/")
+                }
+                else{
+                    
+                    let hateText = Number($(".commentDislikeText").eq(i).text())
+                    hateText -= 1
+                    $(".commentDislikeText").eq(i).text(`${hateText}`)
+                   
+                    let comment_id = Number(dislike[i].getAttribute("data"))                    
+                    let button = dislike[i].getAttribute("button") 
+                    let author = Number(dislike[i].getAttribute("author"))
+                    dislike[i].setAttribute("bool", "false")
+                    dislike[i].style.color = "transparent"
+                    dislike[i].style.webkitTextStroke = "1px rgba(253, 59, 0, 1)"
+                    posts({button, like: like[i].getAttribute("bool") ===  "true"? 1 : 0, dislike: 0, comment_id, author}, "/forum/like/")
+                }
+        }
+    }
+
+    let Tlike = document.getElementsByClassName("like_thread")
+    let Tdislike= document.getElementsByClassName("dislike_thread")
+    for(let i = 0; i < Tlike.length; i++){
+        Tlike[i].onclick = () => {
+            if(Tlike[i].getAttribute("bool") == "false"){// && dislike[i].getAttribute("bool") == "true"){
+                if(Tdislike[i].getAttribute("bool") ===  "true"){
+                    Tdislike[i].style.color = "transparent"
+                    Tdislike[i].style.webkitTextStroke = "1px rgba(253, 59, 0, 1)"
+                    Tdislike[i].setAttribute("bool", "false")
+                    
+                    let hateText = Number($("#hateText").text())
+                    hateText -= 1
+                    $("#hateText").text(`${hateText}`)
+                   
+                }
+                
+
+                let likeText = Number($("#likeText").text())
+                likeText += 1
+                $("#likeText").text(`${likeText}`)
+                
+                let button = Tlike[i].getAttribute("button") 
+                let thread_id = Number(Tlike[i].getAttribute("data"))
+                posts({like: 1, dislike: 0, thread_id: thread_id, button}, "/forum/threadLike/")
+                Tlike[i].setAttribute("bool", "true")
+                Tlike[i].style.color = "red"
+                Tdislike[i].style.color = "transparent"
+                Tdislike[i].style.textStroke = "1px rgba(253, 59, 0, 1)"
+            }
+            else{
+                let thread_id = Number(Tlike[i].getAttribute("data"))
+                    
+                    let likeText = Number($("#likeText").text())
+                    likeText -= 1
+                    $("#likeText").text(`${likeText}`)
+                    let button = Tlike[i].getAttribute("button") 
+                    Tlike[i].setAttribute("bool", "false")
+                    Tlike[i].style.color = "transparent"
+                    Tlike[i].style.webkitTextStroke = "1px red"
+                    posts({button, like: 0, dislike: Tdislike[i].getAttribute("bool") ===  "true"? 1 : 0 , thread_id: thread_id}, "/forum/threadLike/")
+                
+            }
+        }
+            Tdislike[i].onclick = () => {
+                if(Tdislike[i].getAttribute("bool") == "false"){
+                    if(Tlike[i].getAttribute("bool") ===  "true"){
+                    Tlike[i].setAttribute("bool", "false")
+                    Tlike[i].style.color = "transparent"
+                    Tlike[i].style.webkitTextStroke = "1px red"
+
+                    
+                let likeText = Number($("#likeText").text())
+                likeText -= 1
+                $("#likeText").text(`${likeText}`)
+                   
+                }
+                
+                let hateText = Number($("#hateText").text())
+                hateText += 1
+                $("#hateText").text(`${hateText}`)
+                   
+            
+                let thread_id = Number(Tdislike[i].getAttribute("data"))
+                let button = Tdislike[i].getAttribute("button") 
+                posts({button, like: 0, dislike: 1, thread_id: thread_id}, "/forum/threadLike/")
+                    Tdislike[i].setAttribute("bool", "true")
+                    Tdislike[i].style.color = "yellow"
+                }
+                else{
+                    let hateText = Number($("#hateText").text())
+                    hateText -= 1
+                    $("#hateText").text(`${hateText}`)
+                   
+                    
+                    let thread_id = Number(Tdislike[i].getAttribute("data"))
+                    
+                    Tdislike[i].setAttribute("bool", "false")
+                    Tdislike[i].style.color = "transparent"
+                    Tdislike[i].style.textStroke = "1px rgba(253, 59, 0, 1)"
+                    let button = Tdislike[i].getAttribute("button")     
+                    posts({button, like: Tlike[i].getAttribute("bool") ===  "true"? 1 : 0, dislike: 0 , thread_id: thread_id}, "/forum/threadLike/")
+                }
+        }
+    }
+
+$('#fav_thread').click(function(){
+    if($(this).attr("bool") == "false"){
+    let thread_id = Number($(this).attr("data"))
+    category = "{{thread.thread_category.title}}"
+    title = "{{thread.title}}"
+    let app = "forum"
+    let toggleBool = "true"
+
+    posts({href: window.location.href, thread_id: thread_id, title, app, category, toggleBool}, "/forum/favourite/")
+        $(this).attr("bool", "true")
+        $(this).css("color", "orange")
+    }
+    else{
+        let thread_id = Number($(this).attr("data"))
+        $(this).attr("bool", "false")
+        $(this).css("color", "transparent")
+        let category = "{{thread.thread.thread_category.id}}"
+        let title = "{{thread.title}}"
+        let app = "forum"
+        let toggleBool = ""
+    posts({href: window.location.href, thread_id: thread_id, title, category, app, toggleBool}, "/forum/favourite/")
+    }
+
+}) 
+
+
+
+let reply = document.getElementsByClassName("reply")
+let replyDiv = document.getElementsByClassName("replyDiv")
+
+let showReplylen = document.getElementsByClassName("showReplys").length
+
+for(let i = 0; i < reply.length; i++){
+    let toggleReplyDiv = $(".reply").eq(i).attr("toggle")
+    reply[i].onclick = () => {
+        if (toggleReplyDiv == "true"){
+            replyDiv[i].style.display = "block"
+            // reply[i].style.color = "brown"
+            toggleReplyDiv = "false"
+        }
+        else{
+            replyDiv[i].style.display = "none"
+            // reply[i].style.color = "black"
+            toggleReplyDiv = "true"
+        }
+    }
+    $(".replyBtn").eq(i).click(function(){
+        if($('.replyMessage').eq(i).val() === "") return
+        replyDiv[i].style.display = "none"
+        reply[i].style.color = "black"
+        toggleReplyDiv = "true"
+        let replyMessage = $('.replyMessage').eq(i).val()
+        let sender_id = Number("{{user.id}}")
+        let comment_id = Number($(this).attr("comment_id"))
+        let receiver_id = Number($(this).attr("sender"))
+        let no_of_reply =  $(".no_of_reply").eq(i).text()
+        
+        // incrementing the number of replies
+        let increment_reply = Number(no_of_reply) + 1
+        $(".no_of_reply").eq(i).text(increment_reply)
+        // append the message to the list
+        // $(".showReplysDiv").eq(i).append(`<div>${replyMessage}</div>`)
+        
+        posts({replyMessage, receiver_id, comment_id, sender_id}, "/forum/reply/")
+        // initializing the message box to nothing
+        $('.replyMessage').eq(i).val("")
+    })
+}
+
+
+for(let i = 0; i < showReplylen; i++){
+    $(".showReplys").eq(i).click(function(){
+        let toggleReplies = $(".showReplysDiv").eq(i).attr("toggle")
+        if(toggleReplies == "false"){
+            $(".showReplysDiv").eq(i).css("display, block")
+            let comment_id = Number($(".showReplysDiv").eq(i).attr("data"))
+            getData(`/forum/getReply/${comment_id}`, $(".showReplysDiv").eq(i))
+            $(".showReplysDiv").eq(i).attr("toggle", "true")
+        }
+        else{
+            $(".showReplysDiv").eq(i).css({"display": "none"})
+            $(".showReplysDiv").eq(i).attr("toggle", "false")
+        }
+    })
+}
+
+function posts(val, Url){
+    let payload = JSON.stringify(val) 
+    let post = $.ajax({
+        url: Url,
+        method: "POST",
+        headers: {"X-CSRFToken": "{{ csrf_token }}"},
+        data: {"data": payload},
+        dataType: "json",
+        success: function(res, status){
+            console.log(res);
+        },
+        
+        fail: function(res){
+            console.log(res.status);
+        }
+    })
+
+    post.done(()=>{
+        console.log("success")
+    })
+
+    post.fail(()=>{
+        console.log("fail")
+    })
+}
+
+function getData(url, htmlObj){
+    $.ajax({
+        url: url,
+        datatype: 'json',
+        type: 'GET',
+        success: function(replies){
+            htmlObj.empty()
+            htmlObj.css({"display": "block"})
+            replies["data"].forEach((reply) =>{
+                if (reply.image){
+                    var Image = reply.image
+                    var ImgClass = "usericonSmall"
+                    var imageIcon = `<img class="${ImgClass}" src="${Image}" alt="">`
+                }
+                else{
+                    var Image = reply.sender_name[0].toUpperCase()
+                    var ImgId = "authorDefaultImage"
+                    var imageIcon = `<p id="${ImgId}" alt="">${Image}</p>`
+                }
+                if(Number("{{user.id}}") === reply.sender_id){
+                    var editIcon = `<span class="contentInfo editReply" timestamp=${reply.timestamp} comment_id=${reply.comment_id} sender=${reply.sender_id} receiver=${reply.receiver_id} style="cursor: pointer;"><i class="fa fa-pencil-alt contentIcon"></i>edit</span>`
+                }
+                else{
+                    var editIcon = `<span class="contentInfo editReply"></span>`
+                }
+            
+                htmlObj.append(`
+                <div class="replyCard">         
+                    <div>
+                        ${imageIcon}  
+                    </div>   
+                    <div>
+                        <a href="/profile/${reply.sender_name}/" class="contentInfo">${reply.sender_name}</a>
+                        <p class="commentToBeEditted" style="margin-bottom: 5px;">${reply.comment}</p>
+                        <div class="spacing-bottom">
+                        ${editIcon}
+                        <span class="contentInfo"><i class="fa fa-clock contentIcon"></i> ${reply.datetime}</span>
+                        </div>
+                    </div>
+                </div> `)
+
+            })  
+                let editReply = document.querySelectorAll('.editReply')
+                let editComment = document.querySelectorAll('.commentToBeEditted')
+                let keepAllEdit = {}
+                for(let i = 0; i < editReply.length; i++ ){
+                        keepAllEdit[`${i}`] = false
+                        editReply[i].onclick = () =>{
+                            if(keepAllEdit[`${i}`] == false){
+                                var comment_id = editReply[i].getAttribute('comment_id') 
+                                var sender_id = editReply[i].getAttribute('sender')
+                                var receiver_id = editReply[i].getAttribute('receiver')
+                                var timestamp = editReply[i].getAttribute('timestamp')
+                                var createDiv = document.createElement('div')
+                                var createInput = document.createElement('input')
+                                var createButton = document.createElement('button')
+                                createButton.innerText = 'edit'
+                                createButton.setAttribute('id', 'editbtn')
+                                createDiv.setAttribute('class', 'editForm')
+                                createInput.setAttribute('type', 'text')
+                                createInput.value = editComment[i].innerText
+                                createDiv.append(createInput)
+                                createDiv.append(createButton)
+                                editReply[i].after(createDiv)
+                                keepAllEdit[`${i}`] = true
+                                $('#editbtn').click(function(){
+                                    newComment = createInput.value
+                                    editComment[i].innerText = newComment 
+                                    posts({comment_id, sender_id, receiver_id, newComment, timestamp}, "/forum/editReply/")
+                                    $(".editForm").remove()
+                                })
+                            }
+                            else{
+                                keepAllEdit[`${i}`] = false
+                                $(".editForm").remove()
+                            }
+                    }
+                }
+        }
+    })
+}
+            
+
+            let ad_data = "{{serialized_ad}}".replace(/&quot;/g,'"')
+            let ad_dict = JSON.parse(ad_data)
+            let all_member = "{{all_members}}".replace(/&quot;/g,'"')
+            let all_dict = JSON.parse(all_member)
+            
+            var resizeOnce = 0;
+            window.addEventListener("resize", promote)
+            function promote(){
+                var max = "(max-width: 600px)"
+                if(window.matchMedia(max).matches){
+                    $("#container").css({"display": "grid", "grid-template-columns": "1fr"}) 
+                    }
+                else{
+                    $("#container").css({"display": "grid", "grid-template-columns": "1fr 3.5fr 1fr"})    
+                    if(resizeOnce == 0){
+                        $("#container").append(`<div id="promotedDiv"></div>`)
+                        ad_dict.forEach((ad)=>{
+                        if(ad.model == "forum.members"){
+                            let memberFiltered = all_dict.filter(member => member.pk == ad.fields.hamlet )
+                            let image = memberFiltered[0].fields.image ? `<img class="usericon" src="${memberFiltered[0].fields.image}" alt="">` : `<img class="usericon" src="/static/hamlet.png" alt="hamlet default image">` 
+                                $("#promotedDiv").append(`<div class='promoCard'>         
+                                <div>
+                                    ${image}
+                                </div>   
+                                <div>
+                                    <p class="whatsapp-color">PROMOTED</p>
+                                    <a class="contentTitle" href="/forum/hamlet/${memberFiltered[0].fields.title}/${memberFiltered[0].pk}/">${memberFiltered[0].fields.title}</a>
+                                    <p>${memberFiltered[0].fields.description}</p>
+                                    <a  href="/profile/{{community.created_by.username}}/" class="contentInfo"><i class="fa fa-user "></i> {{community.created_by.username}}</a> 
+                                    <span class="contentInfo">${memberFiltered[0].fields.no_of_thread} threads</span>
+                                    </div>
+                            </div>`)
+                        }
+                        else{
+                            let urlLink = ad.fields.advert_url
+                        
+                            if(!urlLink.match("http")){
+                                urlLink =  `http:\\\\${ad.fields.advert_url}`
+                                }
+                            
+                            $("#promotedDiv").append(`<div class="advertCard">
+                                <div>
+                                    <img class="ads" src="/media/${ad.fields.advert}" alt="">
+                                </div>
+                                <div class="adContents">
+                                    <p class="whatsapp-color">SPONSORED</p>
+                                    <p>${ad.fields.advert_title}</p>
+                                    <p>${ad.fields.advert_details}</p>
+                                    <button class="adsButton"><a style="color:white" href="${urlLink}" target="_blank">Visit Site</a></button>
+                                </div>`
+                                )        
+                            }
+                            })         
+                    }
+                }
+                resizeOnce++
+            }
+            promote()
+
+</script>
+
+{% endblock %}

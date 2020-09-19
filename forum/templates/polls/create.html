@@ -1,0 +1,57 @@
+{% extends "forum/base.html" %}
+{% block title %}create poll{% endblock %}
+{% block content %}
+{% load crispy_forms_tags %}
+
+{% if user.is_authenticated %}
+<div class="allCard">
+    <h1>Create polls</h1>    
+    <form id="form" method="POST" action="/polls/create/" enctype="multipart/form-data">
+        {% csrf_token %}
+        {{ poll|crispy }}
+        <input type="hidden" name="choices" id="choices">
+        <input id="submit" type="submit" value="submit">
+    </form>
+    
+    
+    <br>
+    <input placeholder="Input choices..." type="text" name="" id="choice">
+    <button id="addChoices">submit choice</button>
+    <div id="showChoice"></div>
+</div>
+<script>
+    $("#form").submit(function(event){
+        $("#submit").attr("disabled", true)
+    })
+
+    let choices = []
+    let id = 0
+    $("#addChoices").click(function(){
+        if($('#choice').val() === "") return alert("enter something")
+        let choice= $('#choice').val()
+        choices.push({"choice": choice, id: id++})    
+        $("#showChoice").empty()
+        choices.forEach((choice)=>{
+            $("#showChoice").append(`<div id=${choice.id}><span>${choice.choice}</span> <button style="margin-left: 15px; border-radius: 50%; background: red" class="remove">&times;</button></di>`)
+                $(".remove").click(function(){
+                    let id = Number($(this).parent().attr("uid"))
+                    choices = choices.filter((choice) => choice.id != id)
+                    $(this).parent().remove()
+                    $("#choices").val(JSON.stringify(choices))
+                })
+        })
+        $("#choices").val(JSON.stringify(choices))
+        $('#choice').val("")
+    })
+
+$("#submit").click(function(e){
+    if(choices < 1){
+        alert("not enough choices")
+        e.preventDefault()
+        return
+    }
+})
+
+</script>
+{% endif %}
+{% endblock %}

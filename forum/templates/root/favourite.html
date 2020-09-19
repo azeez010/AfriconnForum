@@ -1,0 +1,63 @@
+{% extends "forum/base.html" %}
+{% block title %}Afrikaz - fav_thread{% endblock %}
+{% block content %}
+    
+{% if user.is_authenticated %}
+<h1>favourite pages</h1>
+    <div class="infinite-container">
+        <div class="infinite-item">
+        {% for fav in fav_thread|dictsortreversed:"datetime" %}
+            <div class="favouriteDiv">
+                <span data="{{fav.fav_id}}" app="{{fav.app}}" title="{{fav.title}}" category="{{fav.category}}" class="cancel">&times;</span>
+                <p><a href="{{ fav.fav_thread}}">{{fav.title }}</a></p>
+                <p style="font-size: 18px;"><b>{{ fav.category }} - {{ fav.app }}</b></p>
+                <p>{{fav.datetime}}</p>
+            </div> 
+            {% endfor %}
+        </div>
+    </div>
+    
+    {% if fav_thread.has_next %}
+    <a class="infinite-more-link" href="?category={{category}}&page={{ fav_thread.next_page_number }}">More</a>
+    {% endif %}
+    
+    <div class="loading" style="display: none;">
+        Loading...
+    </div>
+    
+{% else %}
+    <p>Login to view your favourites</p>
+{% endif %} 
+
+    <script src="/static/jquery.waypoints.min.js"></script>
+    <script src="/static/infinite.min.js"></script>
+    
+    <script>
+var infinite = new Waypoint.Infinite({
+    element: $('.infinite-container')[0],
+    onBeforePageLoad: function () {
+    $('.loading').show();
+    },
+    onAfterPageLoad: function ($items) {
+    $('.loading').hide();
+    }
+});
+</script>
+
+
+    <script>
+let cancel = $(".cancel").length        
+for(let i = 0; i < cancel; i++ ){
+     $('.cancel').eq(i).click(function(){
+        let thread_id = Number($(this).attr("data"))
+        let category = $(this).attr("category")
+        let title = $(this).attr("title")
+        let app = $(this).attr("app") 
+        let toggleBool = ""
+        $(this).parent().remove()
+        posts({href: window.location.href, thread_id: thread_id, title, category, app, toggleBool}, "/forum/favourite/")
+    })
+
+}
+    </script>
+{% endblock %}

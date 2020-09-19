@@ -1,0 +1,107 @@
+{% extends "forum/base.html" %}
+{% block title %}search - {{ keyword }}{% endblock %}
+{% block content %}
+{% load filterdata %}
+{% load humanize %}
+<!-- hide the search icon -->
+<style>
+    #search-blog{
+        display: none;
+    }
+</style>
+
+{% if noSearch %}
+<div id="error"><span>No result<span id="messageCancel">&times;</span></span></div>
+<form action="/blog/search/" method="post">
+    {% csrf_token %}
+    <div style="display: flex; justify-content: space-between;">
+        <input type="search" name="search" placeholder="search user, comments, threads...">
+        <button style="border-radius: 50%; background: none; background-color: white; border: 1px black solid; height: 30px; width: 30px"><i style="color: black; position: absolute; margin-left: -6px; margin-top: -6px;" id="searchForum" class="fa fa-search"></i></button>
+    </div>
+</form>
+{% else %}
+<form action="/blog/search/" method="post">
+    {% csrf_token %}
+    <div style="display: flex; justify-content: space-between;">
+        <input type="search" name="search" placeholder="search user, comments, threads...">
+        <button style="border-radius: 50%; background: none; background-color: white; border: 1px black solid; height: 30px; width: 30px"><i style="color: black; position: absolute; margin-left: -6px; margin-top: -6px;" id="searchForum" class="fa fa-search"></i></button>
+    </div>
+</form>
+<p class="contentTitle">{{ keyword }}</p> 
+            {% for blog in searches %}
+            <div class="blogCard">
+                <div class="blogImg">
+                    {% if blog.image %}
+                        <img class="blogImage" src="{{blog.image.url}}" alt="">
+                        {% else %}
+                        <img class="blogImage" src="/static/blog.gif" alt="">
+                    {% endif %}
+                </div>
+                <div class="blogInfo">
+                        {% if fav|GetFavBlog:blog.id == request.user.id  %}
+                            <i style="float: right;" data="{{ blog.id }}" title="{{blog.title}}" bool="true" class="fa fa-star angry-checked fav_blog"></i>
+                            {% else %}
+                            <i style="float: right;" data="{{ blog.id }}" title="{{blog.title}}"  bool="false" class="fa fa-star angry-unchecked fav_blog" ></i>
+                        {% endif %}
+                        <a class="contentTitle spacing" href="/blog/each/?title={{blog.slugTitle}}&value={{blog.id}}">{{ blog.title }}</a>
+                        <p class="contentDetail">{{ blog.details | trunc | safe}}</p>
+                        <br>
+                        <div class="spacing-bottom">
+                            <span class="contentInfo"><i class="fa fa-clock contentIcon"></i> {{ blog.datetime|blogDate }} </span>
+                            <span class="contentInfo"><i class="fa fa-user contentIcon"></i> {{ blog.user.username }} </span>
+                            <span class="contentInfo"><i class="fa fa-book contentIcon"></i> {{ blog.title|blogReadTime }} min read </span>
+                        </div>
+                        <br>
+                </div>
+            </div>
+                {% endfor %}
+          
+<a href="/blog/blogs/"><i class="fa fa-arrow-left"></i>go back</a>
+    {% if user.is_authenticated %}
+    <a href="/blog/create/"><i class="fa fa-pen"></i>create blog</a>
+{% endif %}
+
+    <script>
+    function countdown(){
+        for(let i = 0; i < $(".expirydate").length; i++){
+            let timeleft= Number($(".expirydate").eq(i).attr("timeleft"))
+            $(".expirydate").eq(i).text(`${Math.floor((timeleft / (24 * 3600000))) == 0 ? "" : Math.floor((timeleft / (24 * 3600000))) + " days"}  ${Math.floor((timeleft / (3600000) % 24)) == 0 ? "" : Math.floor((timeleft /(3600000) % 24)) + " hours"}  ${Math.floor((timeleft / 60000) % 60)} min left`)
+        }
+    }
+    countdown()
+    let timeout = setInterval(()=>countdown(), 60000)
+    
+    </script>
+       
+<script>
+let fav = $('.fav_blog').length
+for(let i = 0; i < fav; i++){
+    $('.fav_blog').eq(i).click(function(){
+        if($(this).attr("bool") == "false"){
+            let thread_id = Number($(this).attr("data"))
+            category = "blog"
+            let title = $(this).attr("title")
+            let app = "blog"
+            let toggleBool = "True"
+            let url = `/blog/each/?title=${title}&value=${thread_id}` 
+            posts({href: url, thread_id: thread_id, title, app, category, toggleBool}, "/forum/favourite/")
+            $(this).attr("bool", "true")
+            $(this).css("color", "orange")
+        }
+        else{
+            let thread_id = Number($(this).attr("data"))
+            $(this).attr("bool", "false")
+            $(this).css("color", "transparent")
+            let category = "blog"
+            let title = $(this).attr("title")
+            let app = "blog"
+            let toggleBool = ""
+            let url = `/blog/each/?title=${title}&value=${thread_id}` 
+            posts({href: url, thread_id: thread_id, title, category, app, toggleBool}, "/forum/favourite/")
+        }
+    }) 
+    
+} 
+</script>
+{% endif %}
+{% endblock %}

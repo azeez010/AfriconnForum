@@ -1,0 +1,22 @@
+{% extends "forum/base.html" %}
+{% block title %}Create Thread - {{ hamletTitle }}{% endblock %}
+{% block content %}
+{% load crispy_forms_tags %}
+{% if user.is_authenticated %}
+    <h3>Create Thread</h3>    
+        <form id="form" action="/forum/create/{{hamletTitle}}/{{hamletID}}/" method="post" enctype="multipart/form-data"> 
+                {% csrf_token %}
+                {{ form.media }}
+                {{ form | crispy}}
+                <input  id="button" type="submit" value="post">
+        </form>
+{% else %}
+    <a href="/login/">Login to create thread</a>
+{% endif %}
+<script>
+    $("#form").submit(function(event){
+        $("#button").attr("disabled", true)
+    })
+</script>
+
+{% endblock %}

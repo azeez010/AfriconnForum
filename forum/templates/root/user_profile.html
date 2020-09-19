@@ -1,0 +1,128 @@
+{% extends "forum/base.html" %}
+{% block title %}Profile - {{object.username}}{% endblock %}
+{% block content %}
+{% load filterdata %}
+{% load humanize %}
+<div class="profile-card">
+    {% if object.profile.profile_pic %}
+    <div id="profilePicCard">
+        <img src="{{ object.profile.profile_pic.url }}" class="profile-pics" alt="" srcset="">
+    </div>
+    {% else %}
+    <div id="profilePicCard">
+        <div id="profileDefaultImage">{{ object.username|default_pic }}</div>
+    </div>
+    {% endif %}
+        <p class="threadSummary"><b>Name: {{object.first_name}} {{object.last_name}}</b></p>
+        <p class="threadSummary"><b>Username: </b>{{object.username}}</p>
+        <p class="threadSummary"><b>points:</b> {{ object.profile.afrika_deeds}}</p>
+        <p class="threadSummary"><b>gender:</b> {{object.profile.gender}}</p>
+        {% if object.profile.country.name %}
+            <p class="threadSummary"><b>Country:</b> {{object.profile.country.name }} <img src="{{ object.profile.country.flag }}"></p>
+            <p class="threadSummary"><b>your city: </b>{{object.profile.city}}</p>
+        {% endif %}
+        <p class="threadSummary"><b>About {{object.username}}:</b></p>
+        <p class="threadSummary">{{object.profile.about|urlFilter}}</p>
+        
+    <!-- a user should not be able to follow them self -->
+    {% if user.id != object.id  and user.is_authenticated %}
+    <!-- numbers of follower -->
+        {% if all_follower == 1 %}
+                {% if following %}
+                        <p class="threadSummary"><b>follower</b> you are following {{object.username}}</p>
+                        <span class="threadSummary"><button style="color: white" bool="True" data="{{object.id }}" id="follow">follow </button></span>
+                {% else %}
+                    <p class="threadSummary"><b>Follower:</b> {{all_follower}} person</p>
+                    <span class="threadSummary"><button class="followclass" data="{{object.id }}" bool="False" id="follow">follow </button></span>
+                {% endif %} 
+            {% else %}   
+                {% if following %}
+                    <p class="threadSummary"><b>follower: you and {{ all_follower|add:-1}} other are following {{object.username}} </p>
+                    <span class="threadSummary"><button style="color: white" bool="True" data="{{object.id }}" id="follow">follow </button></span>
+                {% else %}
+                    <b><p class="threadSummary">Follower: {{all_follower}} people</p></b>
+                    <span class="threadSummary"><button class="followclass" data="{{object.id }}" bool="False" id="follow">follow </button></span>
+                {% endif %}
+            {% endif %}
+            {% endif %}
+            {% if user.id != object.id %}
+                <button id="chat" class="followclass">Message</button>
+            {% endif %}
+            <br>
+    {% if user.id != object.id %}
+        <a class="tweet-this" href="/check-followers-profile/{{ object.id }}/{{ object.username }}/">followings</a>
+        <br>
+    {% endif %}
+    <a class="tweet-this" href="/forum/your-threads/?q={{object.id}}&name={{object.username}}">{{ object.username }}'s post</a>
+    <br>
+    <a href="/forum/hamlet-list/{{object.id}}/" class="tweet-color">{{object.username}}'s hamlet</a>
+    <p class="threadSummary"><b>last seen:</b> {{ object.profile.last_seen|naturaltime }}</p>
+    <p class="threadSummary"><b>time joined:</b> {{ object.date_joined|blogDate }}</p>
+</div>
+
+{% if user.is_authenticated %}
+    <script>
+        $("#chat").click(function(){
+            window.location.href = '/forum/chat/{{object.id}}/'
+        })
+    </script>
+{% else%}
+    <script> 
+        $("#chat").click(function(){
+            window.location.href = '/login/?next=/forum/chat/'
+        })
+    </script>
+{% endif %}
+<script>
+
+    $('#follow').click(function(){
+        if($(this).attr("bool") == "False"){
+            let follow_id = Number($(this).attr("data"))
+            let blogBool = $(this).attr("bool")
+            followFunc({blogBool: blogBool, follow_id: follow_id}, "/profile/follow/")
+                $(this).attr("bool", "true")
+                
+            $(this).css("color", "white")        
+            $(this).removeClass("followclass")
+        }
+        else{
+            let blogBool = $(this).attr("bool")
+            let follow_id = Number($(this).attr("data"))
+            $(this).attr("bool", "False")
+            $(this).css("color", "green")
+            $(this).addClass("followclass")
+            followFunc({blogBool: blogBool, follow_id: follow_id}, "/profile/follow/")
+        }
+    }) 
+    
+    
+    function followFunc(val, Url){
+        let payload = JSON.stringify(val) 
+        let post = $.ajax({
+            url: Url,
+            method: "POST",
+            headers: {"X-CSRFToken": "{{ csrf_token }}"},
+            data: {"data": payload},
+            dataType: "json",
+            success: function(res, status){
+                console.log(res);
+                console.log(status)
+            },
+            
+            fail: function(res){
+                console.log(res.status);
+                // console.log(status)
+            }
+        })
+    
+        post.done(()=>{
+            console.log("success")
+        })
+    
+        post.fail(()=>{
+            // window.location.href = "/forum/home"
+            console.log("fail")
+        })
+    }
+</script>    
+{% endblock %}

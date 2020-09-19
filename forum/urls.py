@@ -1,0 +1,48 @@
+from . import views, functionalities
+from django.conf.urls import url
+from django.urls import path
+from .views import updateThread, updateComment, updateCategory
+
+urlpatterns = [
+    path("remove-message/", functionalities.remove_message, name="remove_message"),
+    path("thread/", views.thread, name="thread"),
+    url(r"^signup/", views.register, name="register"),
+    url(r"^home/", views.home, name="forum-home"),
+    url(r"^threadLike/", functionalities.threadLikes, name="threadLikes"),
+    url(r"^reply/", functionalities.reply, name="reply"),
+    url(r"^like/", functionalities.likes, name="likes"),
+    url(r"^getReply/(?P<comment_id>\d+)/$", functionalities.getReply, name="getReply"),
+    url(r"^seenThread/", functionalities.seenThread, name="seen-thread"),
+    url(r"^seen/", functionalities.seen, name="seen"),
+    url(r"^favourite/", functionalities.favourite, name="favourite"),
+    url(r"^comment/(?P<thread_id>\d+)/$", views.comment, name="comment"),
+    url(r"^report/(?P<comment_id>\d+)/$", views.reportComment, name="reportComment"),
+    url(r"^create/(?P<hamletTitle>[\w\s\d\D\S\W]+)/(?P<hamletID>\d+)/$", views.create, name="create"),
+    path("report-thread/<int:thread_id>/", views.reportThread, name="reportThread"),
+    path("update-comment/<int:comment_id>/", views.update_comment, name="update-comment"),
+    path("update-thread/<int:thread_id>/", views.update_thread, name="update-thread"),
+    path("thread/<int:pk>/update", updateThread.as_view(), name="updateThread"),
+    path("comment/<int:pk>/update", updateComment.as_view(), name="update-comment"),
+    path("hamlet/<int:pk>/update", updateCategory.as_view(), name="update-hamlet"),
+    path("search/", views.search, name="search"),
+    path("your-threads/", views.your_threads, name="your-threads"),      
+    path("hamlet/<str:title>/<int:pk>/", views.category, name="category"),
+    path("all-categories/", views.allCategories, name="all-category"),
+    path("push/", views.push, name="push"),
+    path("messages/", views.get_messages, name="messages"),
+    path("replies/", views.get_replies, name="replies"),
+    path("new-thread-comments/", views.get_new_threads_comment, name="get-new-threads-comment"),
+    path("search-forum/", views.search_forum, name="search-forum"),
+    path("update-seen-thread/", functionalities.updateThreadSeen, name="update-seen-thread"),
+    path("create-category/", views.create_category, name="create-category"),
+    path("join-hamlet/", functionalities.join_hamlet, name="join-hamlet"),
+    path("chat/<int:other_person_id>/", views.chat, name="chat"),
+    path("chat-list/", views.chat_list, name="chat-list"),
+    path("send-chat/", functionalities.send_chat, name="send-chat"),
+    path("hamlet-list/<int:user_id>/", views.hamlet_list, name="hamlet-list"),
+    url(r"filter-hamlets/(?P<text>[\w\W\S\d\D\s]+)/$", functionalities.filcat, name="filcat"),
+    url(r"update-chats/(?P<chat_id>\d+)/(?P<previous_list_no>\d+)/$", functionalities.update_chat, name="update-chat"),
+    url(r"share/$", functionalities.share, name="share"),
+    path("theme-color/", functionalities.theme_color, name="theme_color"),
+    path("editReply/", functionalities.edit_reply, name="edit_reply")
+]

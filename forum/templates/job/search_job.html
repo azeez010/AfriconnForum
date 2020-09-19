@@ -1,0 +1,75 @@
+{% extends "forum/base.html" %}
+{% block title %}search - {{ keyword }}{% endblock %}
+{% block content %}
+{% load filterdata %}
+<!-- hide the search icon -->
+<style>
+    #search-job{
+        display: none;
+    }
+</style>
+<form action="/jobs/search-job/"method="POST">
+    {% csrf_token %}
+    <div style="display: flex; justify-content: space-between;">
+        <input type="search" name="search" placeholder="search jobs...">
+        <button style="border-radius: 50%; background: none; background-color: white; border: 1px black solid; height: 30px; width: 30px"><i style="color: black; position: absolute; margin-left: -6px; margin-top: -6px;" id="searchForum" class="fa fa-search"></i></button>
+    </div>
+</form>
+{% for job in searches %}
+<div class="jobCard">
+    <div class="jobImg">
+        {% if job.jobImage %}
+            <img class="jobImage" src="{{job.jobImage.url}}" alt="">
+            {% else %}
+            <img class="jobImage" src="/static/jobs.gif" alt="">
+        {% endif %}
+    </div>
+    <div class="jobInfo">
+        <a class="contentTitle spacing" href="/jobs/jobpage/?title={{job.slugTitle}}&value={{ job.id }}">{{ job.title }}</a>
+            {% if fav|GetFav:job.id and fav|GetFav:job.id == request.user.id  %}
+                <i data="{{ job.id }}" category="{{job.category}}" title="{{job.title}}" bool="true" class="fa fa-star angry-checked fav_Job"></i>
+                {% else %}
+                <i data="{{ job.id }}"category="{{job.category}}" title="{{job.title}}"  bool="false" class="fa fa-star angry-unchecked fav_Job" ></i>
+            {% endif %}
+
+        <p class="contentDetail"><b>{{ job.name_of_company }}</b></p>
+        <p class="contentDetail">{{ job.details | safe |trunc}}</p>
+        <span>{{ job.category }}</span>
+        <br>
+        <div class="spacing-bottom">
+            <span class="contentInfo"><i class="fa fa-clock contentIcon"></i><i class="fa fa-bag contentIcon"></i> {{ job.datetime|blogDate }} </span>
+            <span class="contentInfo"><i class="fa fa-user contentIcon"></i> {{ job.user.username }} </span>
+        </div>
+        <br>
+    </div>
+</div>
+{% endfor %}
+<script>
+let fav = $('.fav_Job').length
+    for(let i = 0; i < fav; i++){
+        $('.fav_Job').eq(i).click(function(){
+            if($(this).attr("bool") == "false"){
+                let thread_id = Number($(this).attr("data"))
+                category = $(this).attr("category")
+                title = $(this).attr("title")
+                let app = "job"
+                let toggleBool = "True"
+                posts({href: window.location.href, thread_id: thread_id, title, app, category, toggleBool}, "/forum/favourite/")
+                $(this).attr("bool", "true")
+                $(this).css("color", "orange")
+            }
+            else{
+                let thread_id = Number($(this).attr("data"))
+                $(this).attr("bool", "false")
+                $(this).css("color", "transparent")
+                category = $(this).attr("category")
+                let title = $(this).attr("title")
+                let app = "job"
+                let toggleBool = ""
+                posts({href: window.location.href, thread_id: thread_id, title, category, app, toggleBool}, "/forum/favourite/")
+            }
+        }) 
+        
+    } 
+    </script>
+{% endblock %}

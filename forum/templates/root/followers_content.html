@@ -1,0 +1,448 @@
+{% extends "forum/base.html" %}
+{% block title %}followers content{% endblock %}
+{% load filterdata %}
+{% load mathfilters %}
+{% block content %}
+        {% if user.is_authenticated %}        
+            <div class="infinite-container">
+                    <div class="infinite-item">
+        {% for followerscontent in followers|dictsortreversed:"datetime" %}     
+            {% if followerscontent.content_type == "job" %}
+                {% with job_content=all_jobs|getuserdata:followerscontent.content_id %}                                
+                <div class="jobCard">
+                    <div class="jobImg">
+                        {% if job_content.jobImage %}
+                            <img class="jobImage" src="{{job_content.jobImage}}" alt="{{job_content.title}} image">
+                            {% else %}
+                            <img class="jobImage" src="/static/jobs.gif" alt="job image">
+                        {% endif %}
+                    </div>
+                    <div class="jobInfo">
+                        <span class="whatsapp-color">JOB SHARED BY - <a href="/profile/{{followerscontent.user_name}}/" class="whatsapp-color">{{followerscontent.user_name}}</a></span>          
+                        <br>
+                        <p class="tweet-color">Job</p>
+                        <a class="contentTitle spacing" href="/jobs/jobpage/?title={{job_content.slugTitle}}&value={{ job_content.id }}">{{ job_content.title }}</a>
+                        <p class="contentDetail"><b>{{ job_content.name_of_company }}</b></p>
+                        <p class="contentDetail">{{ job_content.details|trunc|urlFilter|safe}}</p>
+                        <br>
+                        <div class="spacing-bottom">
+                            <span class="contentInfo"><i class="fa fa-clock contentIcon"></i><i class="fa fa-bag contentIcon"></i> {{ job_content.datetime|blogDate }} </span>
+                            <span class="contentInfo"><i class="fa fa-user contentIcon"></i> {{ job_content.user.username }} </span>
+                        </div>
+                        <br>
+                    </div>
+                </div>
+                                    
+        {% endwith %}
+    {% endif %}
+
+    {% if followerscontent.content_type == "blog" %}
+        {% with blog_content=all_blogs|getuserdata:followerscontent.content_id %}                                
+        <div class="blogCard">
+            <div class="blogImg">
+                {% if blog_content.image %}
+                    <img class="blogImage" src="/media/{{blog_content.image}}" alt="">
+                    {% else %}
+                    <img class="blogImage" src="/static/blog.gif" alt="">
+                {% endif %}
+            </div>
+            <div class="blogInfo">
+                <span class="whatsapp-color">BLOG SHARED BY - <a href="/profile/{{followerscontent.user_name}}/" class="whatsapp-color">{{followerscontent.user_name}}</a></span>          
+                        <br>
+                    <p class="tweet-color">Blog</p>
+                    <a class="contentTitle spacing" href="/blog/each/?title={{blog_content.slugTitle}}&value={{blog_content.id}}">{{ blog_content.title }}</a>
+                    <p class="contentDetail">{{ blog_content.details | trunc | urlFilter | safe}}</p>
+                    <br>
+                    <div class="spacing-bottom">
+                        <span class="contentInfo"><i class="fa fa-clock contentIcon"></i> {{ blog_content.datetime|blogDate }} </span>
+                        <span class="contentInfo"><i class="fa fa-user contentIcon"></i> {{ blog_content.user.username }} </span>
+                        <span class="contentInfo"><i class="fa fa-book contentIcon"></i> {{ blog_content.details|blogReadTime }} min read </span>
+                    </div>
+                    <br>
+            </div>
+        </div>
+        {% endwith %}
+    {% endif %}
+
+
+{% if followerscontent.content_type == "hamlet" %}
+    {% with hamlet=all_hamlets|getuserdata:followerscontent.content_id %}                                
+    <div class="threadCard">         
+        <div>
+            {% if hamlet.image %}
+                <img class="usericon" src="{{hamlet.image.url}}" alt="">
+            {% else %}
+                <img class="usericon" src="/static/hamlet.png" alt="hamlet default image">
+            {% endif %}
+        </div>   
+        <div>
+            <span class="whatsapp-color">HAMLET SHARED BY - <a href="/profile/{{followerscontent.user_name}}/" class="whatsapp-color">{{followerscontent.user_name}}</a></span>          
+            <br>
+            <a class="contentTitle" href="/forum/hamlet/{{hamlet.title}}/{{hamlet.id}}/">{{hamlet.title}}</a>
+            <p class="threadSummary">{{hamlet.description|trunc|urlFilter|safe}}</p>
+            <a  href="/profile/{{hamlet.created_by.username}}/" class="contentInfo"><i class="fa fa-user "></i> {{hamlet.created_by.username}}</a> 
+            <span class="contentInfo">{{hamlet.members_set.all.count|numba_of_views}} members</span>
+            <span class="contentInfo">{{hamlet.no_of_thread}} threads</span>
+        </div>
+    </div>    
+    {% endwith %}
+{% endif %}
+
+
+{% if followerscontent.content_type == "polls" %}
+    {% with poll_content=all_polls|getuserdata:followerscontent.content_id %}                                
+    <div class="pollCard">
+        <div class="pollImg">
+            {% if poll_content.pollImage %}
+                <img class="pollImage" src="/media/{poll_content.pollImage}}" alt="">
+                {% else %}
+                <img class="pollImage" src="/static/polls.gif" alt="">
+            {% endif %}
+        </div>
+        <div class="pollInfo">
+            <span class="whatsapp-color">POLL SHARED BY - <a href="/profile/{{followerscontent.user_name}}/" class="whatsapp-color">{{followerscontent.user_name}}</a></span>          
+            <p class="tweet-color">Poll</p>
+            <a class="contentTitle spacing" href="/polls/poll/?title={{poll_content.slugTitle}}&value={{poll_content.id}}">{{ poll_content.title }}</a>
+            <p class="expirydate" timeleft="{{poll_content.expiryDate|pollNewExpiryTime}}" ></p>
+            {% if poll_content.expiryDate|pollTime %}
+                <p class="whatsapp-this no-mb">active</p>
+            {% else%}
+                <p class="reddit-this no-mb">expired</p>
+            {% endif%}
+            <div class="spacing-bottom">
+                <span class="contentInfo"><i class="fa fa-clock contentIcon"></i><i class="fa fa-bag contentIcon"></i> {{ poll_content.datetime|blogDate }} </span>
+                <a href="/profile/{{ poll_content.user.username }}/" class="contentInfo"><i class="fa fa-user contentIcon"></i> {{ poll_content.user.username }} </a>
+            </div>
+            <br>
+        </div>
+    </div>                    
+    {% endwith %}
+{% endif %}
+
+
+
+    {% if followerscontent.content_type == "forum" %}
+        {% with content=thread|getuserdata:followerscontent.content_id%}
+        <div class="threadCard">
+                <div>
+                    {% if content.user.profile.profile_pic %}
+                        <img class="usericon" src="{{content.user.profile.profile_pic.url}}" alt="">
+                    {% else %}
+                        <div class="default_pic">{{content.user.username|default_pic}}</div>
+                    {% endif %}
+                </div>     
+                <div class="usercontent"> 
+                    <span class="whatsapp-color">THREAD SHARED BY - <a href="/profile/{{followerscontent.user_name}}/" class="whatsapp-color">{{followerscontent.user_name}}</a></span>          
+                    <br>
+                    <p style="margin-bottom: 5px;"><a class="contentTitle" href="/forum/thread/?hamlet={{ content.thread_category.id}}&slug={{ content.threadSlug }}&thread_no={{ content.id }}">{{ content.title }}</a></p>
+                    <p class="threadSummary">{{content.details|trunc|urlFilter|safe}}</p>
+                    <span class="contentInfo"><i class="fa fa-heart contentIcon"></i> {{ content.thread_like_set.all|likenum:"True" }}</span>
+                    <span class="contentInfo"><i class="fa fa-angry contentIcon"></i> {{ content.thread_like_set.all|dislikenum:"True" }}</span>
+                    <span class="contentInfo"><i class="fa fa-user contentIcon"></i> <a href="/profile/{{content.user.username}}/" class="contentInfo">{{ content.user.username }}</a>                 </span>
+                    <span class="contentInfo" ><i class="fa fa-newspaper contentIcon"></i><a class="contentInfo" href="/forum/hamlet/{{ content.thread_category.title}}/{{ content.thread_category.id}}/"> {{ content.thread_category.title}}</a>   </span>
+                    {% if content.created_at|new_threads %}
+                    <span class="new_threads">New!</span>
+                    {% endif %}
+
+                    {% if content.image %}
+                        <img src="{{ content.image.url }}" alt="content image" height="{{content.image.height|div:2}}" width="100%" srcset="">
+                   {% endif %}
+    
+                    
+                    <div class="spacing-bottom">
+                        <span class="contentInfo"><i class="fa fa-eye contentIcon"></i>  {{content.views}} </span>
+                        <span class="contentInfo"><i class="fa fa-clock contentIcon"></i> {{ content.created_at|forumDate }} </span>
+                        <span class="contentInfo"><i class="fa fa-comment contentIcon"></i> {{content.comment_set.all.count}}</span>
+                    </div>
+                </div>
+            </div>
+    {% endwith %}
+{% endif %}
+                
+                {% if followerscontent.comment %}
+                            {% with content=comment|getuserdata:followerscontent.id%}
+                            <div class="threadCard">         
+                                <div>
+                                    {% if content.user.profile.profile_pic %}
+                                        <img class="usericon" src="{{content.user.profile.profile_pic.url}}" alt="">
+                                    {% else %}
+                                        <div id="authorDefaultImage">{{content.user.username|default_pic}}</div>
+                                    {% endif %}
+                                </div>                 
+                                <div class="usercontent">
+                                    <div class="spacing-bottom">
+                                        <p class="tweet-color">Comment</p>
+                                    </div>
+                                    <div class="spacing-bottom">
+                                    </p><a href="/profile/{{content.user.username}}/" class="contentInfo">{{ content.user.username }} </a><p>           
+                                    </div>
+                                    {% if content.image %}
+                                        <img src="{{ content.image.url }}" alt="content image" height="{{content.image.height|div:2}}" width="100%" srcset="">
+                                    {% endif %}
+                    
+                                    <div class="spacing-bottom">
+                                        <p><a href="/forum/thread/?hamlet={{ content.thread.thread_category.id}}&slug={{ content.thread.threadSlug }}&thread_no={{ content.thread.id }}#{{followerscontent.id}}">{{followerscontent.comment|trunc|urlFilter|safe}}</a></p>
+                                        <span class="contentInfo"><i class="fa fa-clock contentIcon"></i> {{ content.datetime|forumDate }} </span>
+                    
+                                    </div>
+                                </div>
+                            </div>
+                                    
+                            {% endwith %}
+                                {% elif followerscontent.details %}
+                                {% with content=thread|getuserdata:followerscontent.id%}
+                                    <div class="threadCard">
+                                            <div>
+                                                {% if content.user.profile.profile_pic %}
+                                                    <img class="usericon" src="{{content.user.profile.profile_pic.url}}" alt="">
+                                                {% else %}
+                                                    <div class="default_pic">{{content.user.username|default_pic}}</div>
+                                                {% endif %}
+                                            </div>     
+                                            <div class="usercontent">           
+                                                <p class="tweet-color">Thread</p>        
+                                                <a href="/profile/{{content.user.username}}/" class="contentInfo">{{ content.user.username }}</a>                 
+                                                <p style="margin-bottom: 5px;"><a class="contentTitle" href="/forum/thread/?hamlet={{ content.thread_category.id}}&slug={{ content.threadSlug }}&thread_no={{ content.id }}">{{ content.title }}</a></p>
+                                                <p class="threadSummary">{{content.details|trunc|urlFilter|safe}}</p>
+                                                <span class="contentInfo"><i class="fa fa-heart contentIcon"></i> {{ content.thread_like_set.all|likenum:"True" }}</span>
+                                                <span class="contentInfo"><i class="fa fa-angry contentIcon"></i> {{ content.thread_like_set.all|dislikenum:"True" }}</span>
+                                                <span class="contentInfo" ><i class="fa fa-newspaper contentIcon"></i><a class="contentInfo" href="/forum/hamlet/{{ content.thread_category.title}}/{{ content.thread_category.id}}/"> {{ content.thread_category.title}}</a>   </span>
+                                                {% if content.created_at|new_threads %}
+                                                <span class="new_threads">New!</span>
+                                                {% endif %}
+                                                {% if content.image %}
+                                                    <img src="{{ content.image.url }}" alt="content image" height="{{content.image.height|div:2}}" width="100%" srcset="">
+                                                {% endif %}
+                                    
+                                                <div class="spacing-bottom">
+                                                    <span class="contentInfo"><i class="fa fa-eye contentIcon"></i>  {{content.views}} </span>
+                                                    <span class="contentInfo"><i class="fa fa-clock contentIcon"></i> {{ content.created_at|forumDate }} </span>
+                                                    <span class="contentInfo"><i class="fa fa-comment contentIcon"></i> {{content.comment_set.all.count}}</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                {% endwith %}
+                                {% endif%}
+                                    
+            {% if followerscontent.name_of_company %}
+            {% with content=thread|getuserdata:followerscontent.id%}                                
+            <div class="jobCard">
+                <div class="jobImg">
+                    {% if followerscontent.jobImage %}
+                        <img class="jobImage" src="{{followerscontent.jobImage}}" alt="">
+                        {% else %}
+                        <img class="jobImage" src="/static/jobs.gif" alt="">
+                    {% endif %}
+                </div>
+                <div class="jobInfo">
+                    <p class="tweet-color">Job</p>
+                    <a class="contentTitle spacing" href="/jobs/jobpage/?title={{followerscontent.slugTitle}}&value={{ followerscontent.id }}">{{ followerscontent.title }}</a>
+                    <p class="contentDetail"><b>{{ followerscontent.name_of_company }}</b></p>
+                    <p class="contentDetail">{{ followerscontent.details|trunc|urlFilter|safe }}</p>
+                    <span>{{ followerscontent.thread_category.id}}</span>
+                    <br>
+                    <div class="spacing-bottom">
+                        <span class="contentInfo"><i class="fa fa-clock contentIcon"></i><i class="fa fa-bag contentIcon"></i> {{ followerscontent.datetime|blogDate }} </span>
+                        <span class="contentInfo"><i class="fa fa-user contentIcon"></i> {{ followerscontent.user.username }} </span>
+                    </div>
+                    <br>
+                </div>
+            </div>
+                                
+    {% endwith %}
+    {% endif%}
+
+    {% if followerscontent.tags %}
+        {% with content=thread|getuserdata:followerscontent.id%} 
+                <div class="blogCard">
+                    <div class="blogImg">
+                        {% if followerscontent.image %}
+                            <img class="blogImage" src="/media/{{followerscontent.image}}" alt="">
+                            {% else %}
+                            <img class="blogImage" src="/static/blog.gif" alt="">
+                        {% endif %}
+                    </div>
+                    <div class="blogInfo">
+                            <p class="tweet-color">Blog</p>
+                            <a class="contentTitle spacing" href="/blog/each/?title={{followerscontent.slugTitle}}&value={{followerscontent.id}}">{{ followerscontent.title }}</a>
+                            <p class="contentDetail">{{ followerscontent.details|trunc|urlFilter|safe}}</p>
+                            <br>
+                            <div class="spacing-bottom">
+                                <span class="contentInfo"><i class="fa fa-clock contentIcon"></i> {{ followerscontent.datetime|blogDate }} </span>
+                                <span class="contentInfo"><i class="fa fa-user contentIcon"></i> {{ content.user.username }} </span>
+                                <span class="contentInfo"><i class="fa fa-book contentIcon"></i> {{ followerscontent.title|blogReadTime }} min read </span>
+                            </div>
+                            <br>
+                    </div>
+                </div>
+                {% endwith %}
+    {% endif %}             
+
+        {% if followerscontent.expiryDate %}
+            {% with content=thread|getuserdata:followerscontent.id%} 
+
+            <div class="pollCard">
+                <div class="pollImg">
+                    {% if followerscontent.pollImage %}
+                        <img class="pollImage" src="/media/{followerscontent.pollImage}}" alt="">
+                        {% else %}
+                        <img class="pollImage" src="/static/polls.gif" alt="">
+                    {% endif %}
+                </div>
+                <div class="pollInfo">
+                    <p class="tweet-color">Poll</p>
+                    <a class="contentTitle spacing" href="/polls/poll/?title={{followerscontent.slugTitle}}&value={{followerscontent.id}}">{{ followerscontent.title }}</a>
+                    <p class="expirydate" timeleft="{{followerscontent.expiryDate|pollNewExpiryTime}}" ></p>
+                    {% if followerscontent.expiryDate|pollTime %}
+                        <p class="whatsapp-this no-mb">active</p>
+                    {% else%}
+                        <p class="reddit-this no-mb">expired</p>
+                    {% endif%}
+                    <div class="spacing-bottom">
+                        <span class="contentInfo"><i class="fa fa-clock contentIcon"></i><i class="fa fa-bag contentIcon"></i> {{ followerscontent.datetime|blogDate }} </span>
+                        <a href="/profile/{{ followerscontent.user.username }}/" class="contentInfo"><i class="fa fa-user contentIcon"></i> {{ content.user.username }} </a>
+                    </div>
+                    <br>
+                </div>
+
+            </div>
+            {% endwith %}
+        {% endif %}
+    {% empty %}
+        <p class="reddit-color">You don't have any content to view, join hamlets, follow people to have more contents,<a class="tweet-color" href="/forum/home/"> click here to go home for now</a></p>
+    {% endfor %}
+                </div>
+        </div>
+
+        {% if followers.has_next %}
+            <a class="infinite-more-link" href="?hamlet={{category}}&page={{ followers.next_page_number }}">More</a>
+        {% endif %}
+
+            <div class="loading" style="display: none;">
+            Loading...
+            </div>
+            <script src="/static/jquery.waypoints.min.js"></script>
+            <script src="/static/infinite.min.js"></script>
+            <script src="/static/promotion.js"></script>
+            
+        <script>
+            let ad_data = "{{serialized_ad}}".replace(/&quot;/g,'"')
+            let ad_dict = JSON.parse(ad_data)
+            let all_member = "{{all_members}}".replace(/&quot;/g,'"')
+            let all_dict = JSON.parse(all_member)
+            
+            var resizeOnce = 0;
+            window.addEventListener("resize", promote)
+            function promote(){
+                var max = "(max-width: 600px)"
+                if(window.matchMedia(max).matches){
+                    $("#container").css({"display": "grid", "grid-template-columns": "1fr"}) 
+                    if(resizeOnce == 0){
+                    $(".infinite-item").children().each(function(index){
+                    if(ad_dict.length == 0) return true
+                        if( index % 5 == 3){
+                        let ad = ad_dict.shift()
+                        if(ad.model == "forum.members"){
+                            let memberFiltered = all_dict.filter(member => member.pk == ad.fields.hamlet )
+                            let image = memberFiltered[0].fields.image_url ? `<img class="usericon" src="${memberFiltered[0].fields.image_url}" alt="">` : `<img class="usericon" src="/static/hamlet.png" alt="hamlet default image">` 
+                                $(this).after(`<div class="threadCard">         
+                                <div>
+                                    ${image}
+                                </div>   
+                                <div>
+                                    <p class="whatsapp-color">PROMOTED</p>
+                                    <a class="contentTitle" href="/forum/hamlet/${memberFiltered[0].fields.title}/${memberFiltered[0].pk}/">${memberFiltered[0].fields.title}</a>
+                                    <p>${memberFiltered[0].fields.description}</p>
+                                    <a  href="/profile/{{community.created_by.username}}/" class="contentInfo"><i class="fa fa-user "></i> {{community.created_by.username}}</a> 
+                                    <span class="contentInfo">${memberFiltered[0].fields.no_of_thread} threads</span>
+                                    </div>
+                            </div>`)
+                        }
+                        else{
+                            let urlLink = ad.fields.advert_url
+                        
+                        if(!urlLink.match("http")){
+                            urlLink =  `http:\\\\${ad.fields.advert_url}`
+                            }
+                        
+                        $(this).after(`<div class="advertCard">
+                            <div>
+                                <img class="ads" src="${ad.fields.advert_image_url}" alt="${ad.fields.advert_title} image">
+                            </div>
+                            <div class="adContents">
+                                <p class="whatsapp-color">SPONSORED</p>
+                                <p>${ad.fields.advert_title}</p>
+                                <p class="contentInfo">${ad.fields.advert_details}</p>
+                                <button><a style="color:white" href="${urlLink}" target="_blank">Visit Site</a></button>
+                            </div>`
+                            )        
+                        }
+                        }
+                    })
+                        }
+                    }
+                else{
+                    $("#container").css({"display": "grid", "grid-template-columns": "1fr 3.5fr 1fr"})    
+                    if(resizeOnce == 0){
+                        ad_dict.forEach((ad)=>{
+                        console.log(ad.pk)
+                        $("#container").append(`<div id="promotedDiv"></div>`)
+                        if(ad.model == "forum.members"){
+                            let memberFiltered = all_dict.filter(member => member.pk == ad.fields.hamlet )
+                            let image = memberFiltered[0].fields.image_url ? `<img class="usericon" src="${memberFiltered[0].fields.image_url}" alt="">` : `<img class="usericon" src="/static/hamlet.png" alt="hamlet default image">` 
+                                $("#promotedDiv").append(`<div class='promoCard'>         
+                                <div>
+                                    ${image}
+                                </div>   
+                                <div>
+                                    <p class="whatsapp-color">PROMOTED</p>
+                                    <a class="contentTitle" href="/forum/hamlet/${memberFiltered[0].fields.title}/${memberFiltered[0].pk}/">${memberFiltered[0].fields.title}</a>
+                                    <p>${memberFiltered[0].fields.description}</p>
+                                    <a  href="/profile/{{community.created_by.username}}/" class="contentInfo"><i class="fa fa-user "></i> {{community.created_by.username}}</a> 
+                                    <span class="contentInfo">${memberFiltered[0].fields.no_of_thread} threads</span>
+                                    </div>
+                            </div>`)
+                        }
+                        else{
+                            let urlLink = ad.fields.advert_url
+                        
+                            if(!urlLink.match("http")){
+                                urlLink =  `http:\\\\${ad.fields.advert_url}`
+                                }
+                            
+                            $("#promotedDiv").append(`<div class="advertCard">
+                                <div>
+                                    <img class="ads" src="${ad.fields.advert_image_url}" alt="${ad.fields.advert_title} image">
+                                </div>
+                                <div class="adContents">
+                                    <p class="whatsapp-color">SPONSORED</p>
+                                    <p>${ad.fields.advert_title}</p>
+                                    <p>${ad.fields.advert_details}</p>
+                                    <button class="adsButton"><a style="color:white" href="${urlLink}" target="_blank">Visit Site</a></button>
+                                </div>`
+                                )        
+                            }
+                            })         
+                    // $("#container").append("<div class='promoCard'>h1</div>")
+                    }
+                }
+                resizeOnce++
+            }
+            promote()
+
+            var infinite = new Waypoint.Infinite({
+                element: $('.infinite-container')[0],
+                onBeforePageLoad: function () {
+                $('.loading').show();
+                },
+                onAfterPageLoad: function ($items) {
+                $('.loading').hide();
+                }
+            });
+        </script>
+    
+
+    {% else %}
+        <a href="/login/"  class="tweet-color">Login to view your follower</a>
+    {% endif %}   
+{% endblock %}

@@ -1,0 +1,149 @@
+{% extends "forum/base.html" %}
+{% block title %}all_posts content{% endblock %}
+{% load filterdata %}
+{% block content %}
+<h1>{{ poster_name}}'s posts</h1>
+            {% if all_posts.paginator.count > 0 %}            
+            <div class="infinite-container">
+                    <div class="infinite-item">
+                      <!-- the followerscontent is used because it is a copied for the all_posts feed -->
+                        {% for followerscontent in all_posts|dictsortreversed:"datetime" %}
+                                {% if followerscontent.details %}
+                                {% with content=thread|getuserdata:followerscontent.id%}
+                                    <div class="threadCard">
+                                            <div>
+                                                {% if content.user.profile.profile_pic %}
+                                                    <img class="usericon" src="{{content.user.profile.profile_pic.url}}" alt="">
+                                                {% else %}
+                                                    <div class="default_pic">{{content.user.username|default_pic}}</div>
+                                                {% endif %}
+                                            </div>     
+                                            <div class="usercontent">           
+                                                <p class="tweet-this">Thread</p>                         
+                                                <p style="margin-bottom: 5px;"><a class="contentTitle" href="/forum/thread/?hamlet={{ content.thread_category.id }}&slug={{ content.threadSlug }}&thread_no={{ content.id }}">{{ content.title }}</a></p>
+                                                <span class="contentInfo"><i class="fa fa-heart contentIcon"></i> {{ content.thread_like_set.all|likenum:"True" | numba_of_views}}</span>
+                                                <span class="contentInfo"><i class="fa fa-angry contentIcon"></i> {{ content.thread_like_set.all|dislikenum:"True" | numba_of_views}}</span>
+                                                <span class="contentInfo"><i class="fa fa-newspaper contentIcon"></i> {{ content.thread_category.title }}  </span>
+                                                {% if content.created_at|new_threads %}
+                                                  <span class="new_threads">New!</span>
+                                                {% endif %}
+                                                
+                                                <div class="spacing-bottom">
+                                                    <span class="contentInfo"><i class="fa fa-eye contentIcon"></i>  {{content.views}} </span>
+                                                    <span class="contentInfo"><i class="fa fa-clock contentIcon"></i> {{ content.created_at|forumDate }} </span>
+                                                    <span class="contentInfo"><i class="fa fa-comment contentIcon"></i> {{content.comment_set.all.count | numba_of_views}}</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                {% endwith %}
+                                {% endif%}
+                                    
+            {% if followerscontent.name_of_company %}
+            {% with content=thread|getuserdata:followerscontent.id%}                                
+            <div class="jobCard">
+                <div class="jobImg">
+                    {% if followerscontent.jobImage %}
+                        <img class="jobImage" src="{{followerscontent.jobImage}}" alt="">
+                        {% else %}
+                        <img class="jobImage" src="/static/jobs.gif" alt="">
+                    {% endif %}
+                </div>
+                <div class="jobInfo">
+                    <p class="tweet-this">Job</p>
+                    <a class="contentTitle spacing" href="/jobs/jobpage/?title={{followerscontent.slugTitle}}&value={{ followerscontent.id }}">{{ followerscontent.title }}</a>
+                    <p class="contentDetail"><b>{{ followerscontent.name_of_company }}</b></p>
+                    <p class="contentDetail">{{ followerscontent.details | safe |trunc}}</p>
+                    <span>{{ followerscontent.thread_category.title }}</span>
+                    <br>
+                    <div class="spacing-bottom">
+                        <span class="contentInfo"><i class="fa fa-clock contentIcon"></i><i class="fa fa-bag contentIcon"></i> {{ followerscontent.datetime|blogDate }} </span>
+                        <span class="contentInfo"><i class="fa fa-user contentIcon"></i> {{ followerscontent.user.username }} </span>
+                    </div>
+                    <br>
+                </div>
+            </div>
+                                
+    {% endwith %}
+    {% endif%}
+
+    {% if followerscontent.tags %}
+                <div class="blogCard">
+                    <div class="blogImg">
+                        {% if followerscontent.image %}
+                            <img class="blogImage" src="/media/{{followerscontent.image}}" alt="">
+                            {% else %}
+                            <img class="blogImage" src="/static/blog.gif" alt="">
+                        {% endif %}
+                    </div>
+                    <div class="blogInfo">
+                            <p class="tweet-this">Blog</p>
+                            <a class="contentTitle spacing" href="/blog/each/?title={{followerscontent.slugTitle}}&value={{followerscontent.id}}">{{ followerscontent.title }}</a>
+                            <p class="contentDetail">{{ followerscontent.details | trunc | safe}}</p>
+                            <br>
+                            <div class="spacing-bottom">
+                                <span class="contentInfo"><i class="fa fa-clock contentIcon"></i> {{ followerscontent.datetime|blogDate }} </span>
+                                <span class="contentInfo"><i class="fa fa-user contentIcon"></i> {{ poster_name }} </span>
+                                <span class="contentInfo"><i class="fa fa-book contentIcon"></i> {{ followerscontent.title|blogReadTime }} min read </span>
+                            </div>
+                            <br>
+                    </div>
+                </div>
+    {% endif %}             
+
+        {% if followerscontent.expiryDate %}
+            {% with content=thread|getuserdata:followerscontent.id%} 
+
+            <div class="pollCard">
+                <div class="pollImg">
+                    {% if followerscontent.pollImage %}
+                        <img class="pollImage" src="/media/{followerscontent.pollImage}}" alt="">
+                        {% else %}
+                        <img class="pollImage" src="/static/polls.gif" alt="">
+                    {% endif %}
+                </div>
+                <div class="pollInfo">
+                    <p class="tweet-this">Poll</p>
+                    <a class="contentTitle spacing" href="/polls/poll/?title={{followerscontent.slugTitle}}&value={{followerscontent.id}}">{{ followerscontent.title }}</a>
+                    <p class="expirydate" timeleft="{{followerscontent.expiryDate|pollNewExpiryTime}}" ></p>
+                    {% if followerscontent.expiryDate|pollTime %}
+                        <p class="whatsapp-this no-mb">active</p>
+                    {% else%}
+                        <p class="reddit-this no-mb">expired</p>
+                    {% endif%}
+                    <div class="spacing-bottom">
+                        <span class="contentInfo"><i class="fa fa-clock contentIcon"></i><i class="fa fa-bag contentIcon"></i> {{ followerscontent.datetime|blogDate }} </span>
+                        <a href="/profile/{{ followerscontent.user.username }}/" class="contentInfo"><i class="fa fa-user contentIcon"></i> {{ content.user.username }} </a>
+                    </div>
+                    <br>
+                </div>
+
+            </div>
+            {% endwith %}
+        {% endif %}
+    {% endfor %}
+                </div>
+        </div>
+
+        {% if all_posts.has_next %}   
+            <a class="infinite-more-link tweet-this" href="/forum/your-threads/?q={{poster_id}}&name={{poster_name}}&page={{all_posts.next_page_number }}">Loading...</a>
+        {% endif %}
+        
+
+        <script src="/static/jquery.waypoints.min.js/"></script>
+        <script src="/static/infinite.min.js/"></script>
+
+        <script>
+            var infinite = new Waypoint.Infinite({
+                element: $('.infinite-container')[0],
+                onBeforePageLoad: function () {
+                $('.loading').show();
+                },
+                onAfterPageLoad: function ($items) {
+                $('.loading').hide();
+                }
+            });
+        </script>
+        {% else %}
+        <p class="reddit-this">No post yet...</p>
+        {% endif %}
+{% endblock %}

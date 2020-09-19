@@ -1,0 +1,68 @@
+{% extends "forum/base.html" %}
+{% block title %}Chat{% endblock %}
+{% block content %}
+{% load filterdata %}
+{% load crispy_forms_tags %}
+
+{% if user.is_authenticated %}  
+<div class="chatName"><a  class="contentTitle tweet-color" href="/profile/{{ other_person.username }}/">{{ other_person.username }}</a></div>
+<br>
+<br>
+<div id="error">    
+    <div>Note this is not a chat app it is useful to talk to people one on one, refresh to get new messages or move your chat to whatsapp or any chat app for now. we are working tirelessly to make sure you can chat here, thanks for understanding</div>
+    <div class="messageCancel">&times;</div>
+</div>
+<div id="msgBox">
+    {% for each_chat in chat_list %}
+        {% if each_chat.who_send == user.id %}    
+        <div class="userchat">
+            <p>{{each_chat.message | urlFilter }}</p>
+            <p class="userchatinfo">{{each_chat.datetime}}</p>
+        </div>
+                {% else %}
+                <div class="guestchat">
+                    <p>{{each_chat.message | urlFilter}}</p>
+                    <p class="guestchatinfo">{{each_chat.datetime}}</p>
+                </div>
+        {% endif %}
+    {% empty %}
+        <p style="color: gray">No chats yet</p>
+    {% endfor %}
+</div>
+<br>
+<textarea placeholder="send message" id="message" rows="3"></textarea>
+<i class="fa fa-paper-plane reddit-color" id="send"></i>
+
+<script>  
+window.scrollTo(0, document.querySelector("#msgBox").scrollHeight);
+
+$("#message").change(function(){
+    if($(this).val()){
+        $("#send").attr("disabled", false)
+    }
+    else{
+        $("#send").attr("disabled", true)
+        $("#send").css("background-color", "gray")
+    }
+})
+    
+    $("#send").click(function(){
+        let sender_id = "{{user.id}}"
+        let sender_name = "{{user.username}}"
+        let receiver_id = "{{other_person.id}}"
+        let message = $("#message").val()
+        let datetime = new Date()
+        if (message){
+            $("#msgBox").append(`<div class="userchat">
+            <p>${message}</p>
+            <p class="userchatinfo">${datetime}</p>
+        </div>`)
+            $("#message").val("")
+            posts({ receiver_id, sender_id, message, sender_name }, "/forum/send-chat/")
+        }      
+})
+    </script>
+{% else %}
+    <p class="tweet-color">Login to chat</p>
+{% endif %}
+{% endblock %}

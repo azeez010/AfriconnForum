@@ -1,0 +1,77 @@
+{% extends "forum/base.html" %}
+{% block title %}Africonn - Jobs {% endblock %}
+{% load filterdata %}
+{% block content %}
+
+    <div id="jobPageCard">
+        <p class="contentTitle">{{ job.title }}</p>
+        <p>{{ job.name_of_company }}</p> 
+        {% if job.jobImage %}
+            <img class="jobImageMain" src="{{ job.jobImage.url }}" alt="">
+        {% else %}
+            <img class="jobImageMain" src="/static/jobs.gif" alt="">
+        {% endif %}
+        <h1 class="contentTitle">Description</h1>
+        <p style="text-align: left;">{{ job.details }} </p>
+    </div>
+        <form action="/jobs/applicant/?title={{ job.slugTitle }}&value={{ job.id }}" method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            <input type="checkbox" name="fulfilled" id=""><span>Check if your job request is fulfilled</span>
+            <input type="submit" value="submit">
+        </form>
+        <span style="font-size: 18px; cursor: pointer" class="tweet-color" onclick="window.history.back()"> <i class="fa fa-arrow-left"></i>go back</span>
+        <a class="tweet-this" href="/jobs/update-job/{{ job.id }}/"><i class="fa fa-pencil-alt">edit jobs</i></a>
+    <span  id="shareToggle" class="reddit-color" style="text-align: left; font-size: 18px;">Share Job</span>
+    <div style="margin-top: 5px; text-align: left;" bool="False" id="hideSocialIcons">
+        <img style="width: 22px; height: 22px; margin-right: 5px" src="/static/aflight.gif" id="sharePage" alt="africonn icon"> 
+        <div class="allicons">
+            <a href='https://www.facebook.com/sharer/sharer.php?u=http://afrikas.herokuapp.com{{request.get_full_path}}' target="_blank"><i class="fab fa-facebook facebook-this facebook-font"></i></a>
+        </div>
+        <div class="allicons">
+            <a href='https://www.reddit.com/submit?title={{job.title}}&url=http://afrikas.herokuapp.com{{request.get_full_path|urlencode}}' target="_blank"><i class="fab fa-reddit reddit-this reddit-font"></i></a>
+        </div>
+        <div class="allicons">
+            <a href='https://wa.me/?text={{job.title}} http://afrikas.herokuapp.com{{request.get_full_path|urlencode}}' target="_blank"><i class="fab fa-whatsapp whatsapp-this whatsapp-font"></i></a>
+        </div>
+        <div class="allicons">
+            <a href='https://twitter.com/intent/tweet?text={{job.title}} http://afrikas.herokuapp.com{{request.get_full_path|urlencode}}' target="_blank"><i class="fab fa-twitter tweet-this tweet-font"></i></a>
+        </div>
+    </div>
+    <br>
+    <br>
+    {% for applicant in applicants %}
+    <div class="threadCard">
+            <div class="author-img">
+            {% if applicant.user.profile.profile_pic %}
+                <img src="{{ applicant.user.profile.profile_pic.url }}" id="authorImage"  alt="{{ applicant.title}} image">
+                {% else %}
+                <div class="authorDefaultImage">{{ applicant.user.username|default_pic }}</div>
+            {% endif %}   
+        </div>
+        <div class="author-info">
+            <p><a href="/profile/{{applicant.user.username}}/">{{applicant.user.username}}</a></p>
+            <p class="author-about">{{applicant.user.profile.about}}</p>
+            {% if applicant.doc %}
+                <a class="tweet-this" href="/jobs/show-resume/?applicant={{applicant.user_id}}&job={{ job.id }}" target="_blank">view {{ applicant.user.username }}'s resume </a>
+            {% endif %}
+            <p class="contentInfo"><i class="fa fa-clock  contentInfo"></i> {{ applicant.applydate|date:"d b, Y"}}</p>
+        </div>
+    </div>
+    {% endfor %}
+ </div>
+</div>
+<script>
+$("#sharePage").click(function(){
+    let share_id = "{{job.id}}"
+    let content_owner = "{{job.user.id}}"
+    let app = "job"
+    let ask = confirm("Are you sure you want to share this job post")
+    if(ask){
+        posts({app, content_owner, share_id}, "/forum/share/")
+        alert("Thanks for sharing this job post it could really go a long way")
+    }
+                 
+})
+
+</script>
+{% endblock %}

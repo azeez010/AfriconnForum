@@ -1,0 +1,247 @@
+{% extends "forum/base.html" %}
+{% block title %}{{ getBlog.title }}{% endblock %}
+{% load filterdata %}
+{% block desc %}{{ getBlog.details }}{% endblock %}
+{% block meta %}{{ getBlog.title|keywords }}{% endblock %}
+{% block content %}
+{% load social_share %}
+<style>
+    #container{
+        background-color: white;
+    }
+    #main-content{
+        background-color: white;
+        padding-left: 10px;
+    }
+</style>
+    <div class="blogInfo">
+        <p class="contentTitle spacing">{{ getBlog.title }}</p>
+        <span class="contentInfo"><i class="fa fa-clock contentIcon"></i> {{ getBlog.datetime|blogDate }} </span>
+        <span class="contentInfo"><i class="fa fa-user contentIcon"></i> {{ getBlog.user.username }} </span>
+        <span class="contentInfo"><i class="fa fa-book contentIcon"></i> {{ getBlog.title|blogReadTime }} min read </span>
+        {% if fav_bool %}
+          <i data="{{ getBlog.id }}" bool="true" class="fa fa-star angry-checked" id="fav_blog"></i>
+        {% else %}
+          <i data="{{ getBlog.id }}" bool="false" class="fa fa-star angry-unchecked" id="fav_blog"></i>
+        {% endif %} 
+
+        {% if getBlog.image %}
+            <img src="{{ getBlog.image.url }}" class="blogI" alt="{{ getBlog.title}} image">
+        {% endif %}
+        <p class="blogDetails spacing">{{ getBlog.details|safe|urlFilter }}</p>
+    </div>
+
+
+<br>
+<div class="blog-author">
+    <div class="author-img">
+    {% if getBlog.user.profile.profile_pic %}
+        <img src="{{ getBlog.user.profile.profile_pic.url }}" id="authorImage"  alt="{{ getBlog.title}} image">
+        {% else %}
+        <div id="authorDefaultImage">{{ getBlog.user.username|default_pic }}</div>
+    {% endif %}   
+    </div>
+    <div class="author-info">
+        <p style="font-size: 18px; font-weight: 900">Author</p>
+        <p><a href="/profile/{{getBlog.user.username}}/">{{getBlog.user.username}}</a></p>
+        <p class="author-about">{{ getBlog.user.profile.about|urlFilter}}</p>
+    </div>
+</div>
+{% if user.is_authenticated %}
+    {% with t=getBlog.blog_like_set.all|getdata:user.id %}
+        {% with did_you_like=getBlog.blog_like_set.all|bloglikenum:"True"%}
+            {% if t.blog_like == True %}
+                <span><i bool="False" data="{{getBlog.id }}" id="blogLike" class="like_comment fa fa-heart heart-checked"></i></span><span class="inclike"> {{did_you_like}}</span c> 
+                {% else %}
+                <i bool="True" data="{{getBlog.id }}" id="blogLike" class="like_comment fa fa-heart heart-unchecked"></i></span><span class="inclike"> {{ did_you_like }}</span>
+            {% endif %}   
+      {% endwith %}    
+    {% endwith %}
+{% endif %}
+
+<p>Share blog</p>
+<div class="socialIcons">
+    <img style="width: 30px; height: 30px; margin-right: 5px" src="/static/aflight.gif" id="sharePage" alt="">
+    <div class="allicons">
+        <a href='https://www.facebook.com/sharer/sharer.php?u=http://www.africonn.com{{request.get_full_path|urlencode}}' target="_blank"><i class="fab fa-facebook facebook-this facebook-font"></i></a>
+    </div>
+    <div class="allicons">
+        <a href='https://www.reddit.com/submit?title={{getBlog.title}}&url=http://www.africonn.com{{request.get_full_path|urlencode}}' target="_blank"><i class="fab fa-reddit reddit-this reddit-font"></i></a>
+    </div>
+    <div class="allicons">
+        <a href='https://wa.me/?text={{getBlog.title}} http://www.africonn.com{{request.get_full_path|urlencode}}' target="_blank"><i class="fab fa-whatsapp whatsapp-this whatsapp-font"></i></a>
+    </div>
+    <div class="allicons">
+        <a href='https://twitter.com/intent/tweet?text={{getBlog.title}} http://www.africonn.com{{request.get_full_path|urlencode}}' target="_blank"><i class="fab fa-twitter tweet-font tweet-this"></i></a>
+    </div>    
+</div>
+
+<br>
+<div id="tags"></div>
+
+<h1>More</h1>
+    {% for blog in recommendation %}
+    <div class="blogCard">
+        <div class="blogImg">
+            {% if blog.image %}
+                <img class="blogImage" src="{{blog.image.url}}" alt="">
+                {% else %}
+                <img class="blogImage" src="/static/blog.gif" alt="">
+            {% endif %}
+        </div>
+        <div class="blogInfo">
+                {% if fav|GetFavBlog:blog.id == request.user.id  %}
+                    <i style="float: right;" data="{{ blog.id }}" title="{{blog.title}}" bool="true" class="fa fa-star angry-checked fav_blog"></i>
+                    {% else %}
+                    <i style="float: right;" data="{{ blog.id }}" title="{{blog.title}}"  bool="false" class="fa fa-star angry-unchecked fav_blog" ></i>
+                {% endif %}
+                <a class="contentTitle spacing" href="/blog/each/?title={{blog.slugTitle}}&value={{blog.id}}">{{ blog.title }}</a>
+                <p class="contentDetail">{{ blog.details | trunc | safe}}</p>
+                <br>
+                <div class="spacing-bottom">
+                    <span class="contentInfo"><i class="fa fa-clock contentIcon"></i> {{ blog.datetime|blogDate }} </span>
+                    <span class="contentInfo"><i class="fa fa-user contentIcon"></i> {{ blog.user.username }} </span>
+                    <span class="contentInfo"><i class="fa fa-book contentIcon"></i> {{ blog.title|blogReadTime }} min read </span>
+                </div>
+                <br>
+        </div>
+    
+    </div>
+    {% endfor %}
+
+    <script>
+$("#sharePage").click(function(){
+    let share_id = "{{getBlog.id}}"
+    let app = "blog"
+    let content_owner = "{{getBlog.user.id}}"
+    let ask = confirm("Are you sure you want to share this blog")
+    if(ask){
+        posts({app, share_id, content_owner, content_owner}, "/forum/share/")
+        alert("Thanks for sharing this blog!")
+    }
+                    
+})
+
+    let ad_data = "{{serialized_ad}}".replace(/&quot;/g,'"')
+    let ad_dict = JSON.parse(ad_data)    
+    console.log(ad_dict)
+    $(".blogCard").children().each(function(index){
+        if(ad_dict.length == 0) return true
+        if( index % 3 == 1){
+          let ad = ad_dict.shift()
+          let urlLink = ad.advert_url
+         
+          if(!urlLink.match("http")){
+            urlLink =  `http:\\\\${ad.advert_url}`
+          }
+          
+          $(this).after(`<div class="advertCard">
+              <div>
+                  <img class="ads" src="/media/${ad.advert}" alt="">
+              </div>
+              <div class="adContents">
+                <p class="whatsapp-this">SPONSORED</p>
+                <p>${ad.advert_title}</p>
+                  <p>${ad.advert_details}</p>
+                <button><a style="color:white" href="${urlLink}" target="_blank">Visit Site</a></button>
+              </div>`
+              )
+          }
+        })
+    </script>
+
+    <script>
+        let fav = $('.fav_blog').length
+        for(let i = 0; i < fav; i++){
+            $('.fav_blog').eq(i).click(function(){
+                if($(this).attr("bool") == "false"){
+                    let thread_id = Number($(this).attr("data"))
+                    category = "blog"
+                    let title = $(this).attr("title")
+                    alert(title)
+                    let app = "blog"
+                    let toggleBool = "True"
+                    posts({href: window.location.href, thread_id: thread_id, title, app, category, toggleBool}, "/forum/favourite/")
+                    $(this).attr("bool", "true")
+                    $(this).css("color", "orange")
+                }
+                else{
+                    let thread_id = Number($(this).attr("data"))
+                    $(this).attr("bool", "false")
+                    $(this).css("color", "transparent")
+                    let category = "blog"
+                    let title = $(this).attr("title")
+                    alert(title)
+                    let app = "blog"
+                    let toggleBool = ""
+                    posts({href: window.location.href, thread_id: thread_id, title, category, app, toggleBool}, "/forum/favourite/")
+                }
+            }) 
+            
+        } 
+
+$('#blogLike').click(function(){
+    if($(this).attr("bool") == "False"){
+        let blog_id = Number($(this).attr("data"))
+        let blogBool = $(this).attr("bool")
+        posts({blogBool: blogBool, blog_id: blog_id}, "/blog/like/")
+        
+        let currentLikes = Number($('.inclike').text())
+        updateLikes = currentLikes - 1
+        $('.inclike').text(` ${updateLikes}`)
+        $(this).css("color", "transparent")
+        this.style.webkitTextStroke = "1px red"
+        $(this).attr("bool", "True")
+    }
+
+    else{
+        let blogBool = $(this).attr("bool")
+        let blog_id = Number($(this).attr("data"))
+        $(this).attr("bool", "False")
+        $(this).css("color", "red")
+        $("#likeText").css("display", "none")
+        
+        let currentLikes = Number($('.inclike').text())
+        updateLikes = currentLikes + 1
+
+        $('.inclike').text(` ${updateLikes}`)
+        posts({blogBool: blogBool, blog_id: blog_id}, "/blog/like/")
+    }
+}) 
+
+let blog_tag_text = '{{getBlog.tags}}'//$("#tags").text()
+let blog_tags = blog_tag_text.split(" ")
+blog_tags.forEach((item)=> $("#tags").append(`<span class="blogTag">${item}</span>`))
+
+function posts(val, Url){
+    let payload = JSON.stringify(val) 
+    let post = $.ajax({
+        url: Url,
+        method: "POST",
+        headers: {"X-CSRFToken": "{{ csrf_token }}"},
+        data: {"data": payload},
+        dataType: "json",
+        success: function(res, status){
+            console.log(res);
+            console.log(status)
+        },
+        
+        fail: function(res){
+            console.log(res.status);
+            // console.log(status)
+        }
+    })
+
+    post.done(()=>{
+        console.log("success")
+    })
+
+    post.fail(()=>{
+        // window.location.href = "/forum/home"
+        console.log("fail")
+    })
+}
+// 
+// 
+</script>
+{% endblock %}

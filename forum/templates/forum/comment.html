@@ -1,0 +1,28 @@
+{% extends "forum/base.html" %}
+{% block title %}comment{% endblock %}
+{% block content %}
+{% load crispy_forms_tags %}
+
+{% if user.is_authenticated %}  
+<p></p>
+<form id="form" action="/forum/comment/{{ thread_id }}/" method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        {{ form.media }}
+        {{ form |crispy }}
+<input id="button" type="submit" value="post">
+    </form>
+    <br>
+    <p class="tweet-color" onclick="window.history.back()"> <i class="fa fa-arrow-left"></i>go back</p>
+      
+    <script>  
+    $(".tinymce").change(function(){
+        console.log($(this.val()))
+    })
+
+    $("#form").submit(function(event){
+        let textarea = $(".tinymce").val()  
+        $("#button").attr("disabled", true)
+    })
+    </script>
+{% endif %}
+{% endblock %}

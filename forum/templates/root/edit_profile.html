@@ -1,0 +1,26 @@
+{% extends "forum/base.html" %}
+{% block title %}Profile - {{user.username}}{% endblock %}
+{% block content %}
+{% load humanize %}
+{% load crispy_forms_tags %}
+    {% if user.is_authenticated %}
+        <h3>Update profile</h3>    
+        <form id="UpdateProfile" action="/profile/update-profile/" method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            {{ form|crispy }}
+            <input type="hidden" name="redirect" id="redirect">
+            <input id="submitBtn" type="submit" value="post">
+        </form>
+        
+    <script>
+        let redirect = sessionStorage.getItem("redirect")
+        if(redirect){
+            $("#redirect").val(redirect)
+        }
+        $("#UpdateProfile").submit(function(){
+            $("#submitBtn").attr("disabled", true)
+            sessionStorage.removeItem("redirect")
+        })
+    </script>
+    {% endif %}
+{% endblock %}

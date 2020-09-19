@@ -1,0 +1,23 @@
+{% extends "forum/base.html" %}
+{% block title %}chat list{% endblock %}
+{% load filterdata %}
+{% block content %}
+{% load crispy_forms_tags %}
+{% if user.is_authenticated %}
+    {% for eachperson in all_chats|dictsortreversed:"chat_receiver.profile.last_seen" %}
+        <div class="allCard">
+            <a class="tweet-this" href="/forum/chat/{{ eachperson.chat_receiver.id }}/">{{ eachperson.chat_receiver.username }}        -       </a>
+            {% if eachperson.chat_receiver.profile.last_seen|onlineStatus %}
+                <span class="whatsapp-color">ONLINE</span>
+            {% else %}
+                <span class="reddit-color">OFFLINE</span>
+            {% endif %}       
+            <p>{{ eachperson.chat_receiver.profile.last_seen }}</p> 
+        </div>
+    {% empty %}
+        <p class="gray">No person to chat with</p>
+    {% endfor %}
+{% else %}
+    <p class="tweet-color">Login to see your chat list</p>
+{% endif %}
+{% endblock %}

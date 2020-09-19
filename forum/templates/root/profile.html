@@ -1,0 +1,186 @@
+{% extends "forum/base.html" %}
+{% block title %}Profile - {{user.username}}{% endblock %}
+{% block content %}
+{% load humanize %}
+{% load filterdata %}
+{% load social_share %}
+{% if user.is_authenticated %}
+<div class="profile-card">
+    {% if user.profile.profile_pic %}
+        <div id="profilePicCard">
+            <img class="profile-pics" src="{{ user.profile.profile_pic.url }}">
+        </div>
+        {% else %}
+        <div id="profilePicCard">
+            <div id="profileDefaultImage">{{ user.username|default_pic }}</div>
+        </div>
+    {% endif %} 
+        <p class="threadSummary"><b>Name: {{user.first_name}} {{user.last_name}}</b></p>
+        <p class="threadSummary"><b>Username: </b>{{user.username}}</p>
+        <p class="threadSummary"><b>your points: </b><span id="afrikaz_deeds">{{user.profile.afrika_deeds}}</span></p>
+        <p class="threadSummary"><b>your country: </b>{{user.profile.country.name}} <img src="{{user.profile.country.flag}}" alt="" srcset=""></p>
+        <p class="threadSummary"><b>your city: </b>{{user.profile.city}}</p>
+        {% if user.profile.job_tags %}
+        <p>your jobs tag: {{ user.profile.job_tags }}</p>
+        {% endif %}
+        <p class="threadSummary"><b>gender:</b>{{user.profile.gender}}</p>
+        <p class="threadSummary"><b>about you:</b></p>
+        <p class="threadSummary">{{user.profile.about|urlFilter}}</p>
+        <p class="tweet-color"><b>Time joined</b>: {{ user.date_joined|naturaltime}}</p>
+        
+        {% if user.ban.on_ban %}
+            <p style="color: red;"> You are being banned from carrying out activities this forum for a day</p>
+        {% endif %}
+        <br>
+        <p class="contentTitle theme_color">Aid</p>
+        <p class="tweet-color">invite</p>
+        <div class="socialIcons">
+            <div class="allicons">
+                <a href='https://www.facebook.com/sharer/sharer.php?u=www.africonn.com/forum/signup/?ref={{user.id}}' target="_blank"><i class="fab fa-facebook facebook-this facebook-font"></i></a>
+            </div>
+            <div class="allicons">
+                <a href='https://www.linkedin.com/shareArticle?mini=true&title=Join Africonn the latest African forum, that allows people to connect with one another across Africa and beyond, it also allow people to post Jobs and get notified through E-mails, guest post on Blogs and know other people"s mind by allowing them to host online polls&url=www.africonn.com/forum/signup/?ref={{user.id}}' target="_blank"><i class="fab fa-linkedin linkedin-this facebook-font"></i></a>
+            </div>
+            <div class="allicons">
+                <a href='https://www.reddit.com/submit?Join Africonn the latest African forum, that allows people to connect with one another across Africa and beyond, it also allow people to post Jobs and get notified through E-mails, guest post on Blogs and know other people"s mind by allowing them to host online polls&url=www.africonn.com/forum/signup/?ref={{user.id}}' target="_blank"><i class="fab fa-reddit reddit-this facebook-font"></i></a>
+            </div>
+            <div class="allicons">
+                <a href='https://wa.me/?text=Join Africonn the latest African forum, that allows people to connect with one another across Africa and beyond, it also allow people to post Jobs and get notified through E-mails, guest post on Blogs and know other people"s mind by allowing them to host online polls http://www.africonn.com/forum/signup/?ref={{user.id}}' target="_blank"><i class="fab fa-whatsapp whatsapp-this facebook-font"></i></a>
+            </div>
+            <div class="allicons">
+                <a href='https://twitter.com/intent/tweet?text=Join Africonn the latest African forum, that allows people to connect with one another across Africa and beyond, it also allow people to post Jobs and get notified through E-mails, guest post on Blogs and know other people"s mind by allowing them to host online polls http://www.africonn.com/forum/signup/?ref={{user.id}}' target="_blank"><i class="fab fa-twitter tweet-this facebook-font"></i></a>
+            </div> 
+        </div>
+      
+        <p class="tweet-this" id="transferPointsBtn">Transfer points</p>
+        <div id="transferPoints">
+            <form action="/profile/transfer-points/" method="post">
+                {% csrf_token %}
+                <input placeholder="enter user..." type="text" name="to" id="to">
+                <input placeholder="enter amount..." type="number" name="points" id="points">
+                <input id="sendbtn" type="submit" value="send">
+            </form>
+        </div>
+        <p id="sendMessageBtn" class="whatsapp-this">click to message admin</p>
+        <div id="sendMessage">
+            <form id="form" method="POST" action="/message-admin/">
+                {% csrf_token %}
+                <input type="text" name="message" placeholder="send the admin any message" id="messageAdmin">
+                <input id="submit" type="submit" value="send">
+            </form>
+        </div>
+        <br>
+        <p class="contentTitle theme_color">Your posts and followings</p>
+        <a href="/forum/hamlet-list/{{user.id}}/" class="tweet-color">{{user.username}}'s hamlet</a>
+        <br>
+        <a class="tweet-this" href="/profile/update/{{ user.profile.id}}/"><i class="fa fa-pen"></i> update profile</a>  
+        <br>
+        <a class="reddit-this" href="/your-followers/">your followers</a>
+        <br>
+        <a class="reddit-this" href="/follower-page/">your followings</a>
+        <br>
+        <a class="reddit-this" href="/forum/your-threads/?q={{user.id}}&name={{user.username}}">your posts</a>
+        <br>
+        <br>
+        <a href="/your-ads/" class="tweet-color">See all your ads</a>
+        <br>
+        <br>
+        <p class="contentTitle theme_color">Site Settings</p>
+        <!-- change theme -->
+         {% if theme.setting == "dark" %}
+         <span id="themeStatus">{{theme.setting}} mode</span>
+         <div class="switch_box box_1">
+             <input type="checkbox" name="theme" id="theme" checked class="switch_1">
+            </div>
+         {% else %}
+         <p>Switch Theme</p>
+         <div class="switch_box box_1">
+             <input type="checkbox" name="theme" id="theme" class="switch_1">
+            </div>
+            {% endif %}
+            <div id="themes"></div>
+            <p class="contentTitle theme_color">Site Stats</p>
+            <p>numbers of all members: {{ all_users }}</p>
+            <p>numbers of threads: {{ no_of_threads }}</p>
+            
+            <p>{{guest_users}} guest user{{guest_users|pluralize}} in the last five minutes</p>
+            <p>{{logined_users}} online user{{guest_users|pluralize}} in the last five minutes</p>
+            <a href="/countrystats/"class="reddit-this">user's country stats</a>
+            
+            <br>
+        {% if user.is_superuser or user.is_staff %}
+        <p class="contentTitle theme_color">Admin</p>
+        <a href="/ads-approval/" class="reddit-this">approve ads</a><br>
+        <a href="/profile/report/" class="reddit-this">reports</a><br>
+        <a href="/remove-homethread/" class="reddit-this">remove homethread</a><br>
+        <!-- only admin can see this -->
+            <p class="whatsapp-this" id="transactionBtn" >Enter the transactions</p>
+            <div id="transaction">
+                <form action="/profile/transactions/" method="post">
+                    {% csrf_token %}
+                    <input placeholder="advertise..." type="category" name="category">
+                    <input type="cost" name="cost">
+                    <input type="submit" value="send">
+                </form>
+            </div>
+            
+        {% endif %}
+    </div>
+
+    <script>
+    var themes = document.getElementById("themes") 
+    var colors = ['blueviolet', 'hotpink', 'rgb(6, 148, 236)',  'orangered', 'rgb(80, 212, 80)']
+    for(let i = 0; i < colors.length; i++){
+        let each_color = document.createElement('div')
+        each_color.style.backgroundColor = colors[i]
+        each_color.style.borderRadius = '50%'
+        each_color.style.width = '50px'
+        each_color.style.height = '50px'
+        themes.append(each_color)
+        themes.style.display = 'flex'
+        each_color.onclick = () =>{
+            changeTheme(colors[i])
+            posts({color: colors[i]}, "/forum/theme-color/")
+        } 
+    }
+    let topbar = document.getElementById("topbar");
+    let middlebar = document.getElementById("middlebar")
+    let bottombar = document.getElementById("bottombar");
+
+    changeTheme = (color) => {
+        let h1 = document.querySelector('h1');
+        let icon = document.querySelectorAll('.profileactive');
+        let theme_color = document.querySelectorAll('.theme_color')
+        let liA = document.querySelectorAll('li a');
+        h1.style.color = color;
+        bottombar.style.background = color;
+        topbar.style.backgroundColor = color;
+        middlebar.style.backgroundColor = color;
+        icon.forEach(icon => {
+            icon.style.color = color;
+        })
+        liA.forEach(Element => {
+            Element.style.color = color;
+        })
+        theme_color.forEach(Element => {
+            Element.style.color = color;
+        })
+    }
+
+        $("#sendMessageBtn").click(function(){
+            $("#sendMessage").toggle()
+        })
+
+        $("#transactionBtn").click(function(){
+            $("#transaction").toggle()
+        })
+
+        $("#transferPointsBtn").click(function(){
+            $("#transferPoints").toggle()
+        })
+        $("#form").submit(function(event){
+            $("#submit").attr("disabled", true)
+        })
+    </script>       
+{% endif %}
+{% endblock %}

@@ -1,0 +1,33 @@
+{% extends "forum/base.html" %}
+{% block title %}Your ads{% endblock %}
+{% block content %}
+{% load mathfilters %}
+{% load filterdata %}
+<h1>Your ads</h1>
+<p class="tweet-color">Note: you can contact the admin on your profile</p>
+{% if advert.count > 0 %}
+    {% for ads in advert %}
+    <div class="advertCard">
+        <div class="blogImg">
+            {% if ads.advert %}
+                <img class="ads" src="{{ads.advert.url}}" alt="">
+            {% endif %}
+        </div>
+            <div class="adContents">
+                    <p class="contentTitle">{{ ads.advert_title }}</p>
+                    <p>{{ ads.advert_details }}</p>
+                    <p class="contentInfo"><i class="fa fa-book contentIcon"></i> {{ ads.advert_category }} </p>
+                    <p>Status:{% if ads.approved %}<span style="color:green">APPROVED</span> {% else %}<span style="color:red">NOT APPROVED</span></p> {% endif %}</p>
+                    <p class="contentInfo"><i class="fa fa-clock contentIcon"></i> created on {{ ads.ad_datetime|forumDate }} </p>
+                    <p class="contentInfo"><i class="fa fa-clock contentIcon"></i> Expires on {{ ads.ad_expirydatetime|forumDate }} days</span> 
+                        <p class="contentInfo"><i class="fa fa-money-bill-alt contentIcon"></i> {{ ads.cost}} </p>
+                        <p class="contentInfo"><i class="fa fa-clock contentIcon"></i>For {{ ads.expiryDate|div:86400 }} days</span>
+                        <br>
+                        <button><a target="_blank"  style="color: white" href="{{ ads.advert_url|httpUrl }}">visit site</a></button>
+                </div>
+    </div>
+    {% endfor %}
+    {% else %}
+        <p>You don't have any advert for now you can place an advert for free if you have enough points. <a class="tweet-color" href="/advertisement/">click here to advertise</a></p>
+    {% endif %}
+{% endblock %}

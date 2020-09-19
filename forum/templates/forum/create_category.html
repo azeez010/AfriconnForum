@@ -1,0 +1,32 @@
+{% extends "forum/base.html" %}
+{% block title %}Create a community{% endblock %}
+{% block content %}
+{% load crispy_forms_tags %}
+{% if user.is_authenticated %}
+{% if warning %}
+    <p class="reddit-color">{{warning}}</p>
+{% else %}
+    {% if user_ADs > community_cost %}
+        <p class="tweet-this">it cost {{community_cost}} to create a community while you currently have {{user_ADs}} ads</p>
+    {% else %}
+    <p class="reddit-this">You currently don't enough ads to create a community go join a community and participate so has to earn enough ads through likes to create your own community</p>
+    {% endif %}
+{% endif %}
+    <h3>Create Category</h3>    
+        <form id="form" action="/forum/create-category/" method="post" enctype="multipart/form-data"> 
+            {% csrf_token %}
+            {{ form | crispy}}
+            <input  id="button" type="submit" value="post">
+        </form>
+    
+{% else %}
+    <a class="tweet-color" href="/login/">Login to create a community</a>
+{% endif %}
+<p class="tweet-this" onclick="window.history.back()"><i class="fa fa-arrow-left"></i> back</p>
+<script>
+    $("#form").submit(function(event){
+        $("#button").attr("disabled", true)
+    })
+</script>
+
+{% endblock %}

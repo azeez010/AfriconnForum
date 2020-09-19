@@ -1,0 +1,81 @@
+{% extends "forum/base.html" %}
+{% block title %}messages{% endblock %}
+{% load filterdata %}
+{% block content %}
+
+{% if user.is_authenticated %}
+    {% if hasPost  %}
+        <p>No new message</p>
+    {% else %}
+    <!-- msg for messages -->
+        <div class="infinite-container">
+            <div class="infinite-item">
+                {% for message in msgs %}
+                    {% if message.receiver_seen == False %}
+                        <div class="allCard">    
+                            <span sender="{{message.sender.id}}" time="{{message.time}}" receiver="{{message.receiver.id}}" msg="{{message.msg}}" msg_type="{{message.msg_type}}" class="cancel">&times;</span>
+                            <p style="color: 1px rgb(29, 161, 242)" style="margin: 2px;">{{message.msg | safe}}</p>
+                            <p class="contentInfo" style="margin: 2px;">{{message.msg_type}}</p>
+                            <a href="/profile/{{message.sender.username }}/" class="contentInfo" style="margin: 2px;"><i class="fa fa-user"></i> {{message.sender.username }}</a>
+                            <span class="contentInfo" style="margin: 2px;"><i class="fa fa-clock"></i> {{message.time|forumDate}}</span>    
+                        </div>
+                    {% else %}
+                    <div class="allCard">    
+                        <span sender="{{message.sender.id}}" message_id="{{message.id}}" receiver="{{message.receiver.id}}" msg="{{message.msg}}" msg_type="{{message.msg_type}}" class="cancel">&times;</span>
+                        <p style="margin: 2px;">{{message.msg | safe}}</p>
+                        <p class="contentInfo" style="margin: 2px;">{{message.msg_type}}</p>
+                        <a href="/profile/{{message.sender.username }}/" class="contentInfo" style="margin: 2px;"><i class="fa fa-user"></i> {{message.sender.username }}</a>
+                        <span class="contentInfo" style="margin: 2px;"><i class="fa fa-clock"></i> {{message.time|forumDate}}</span>
+                    </div>
+                    {% endif %}
+                {% empty %}
+                    <p class="reddit-color">No messages</p>
+                {% endfor %}          
+            </div>
+        </div>
+
+        {% if msgs.has_next %}
+            <a class="infinite-more-link" href="/forum/messages/?page={{ msgs.next_page_number }}">More</a>
+        {% endif %}
+
+        <div class="loading" style="display: none;">
+            Loading...
+        </div>
+
+        <script src="/static/jquery.waypoints.min.js/"></script>
+        <script src="/static/infinite.min.js/"></script>
+
+        <script>
+            var infinite = new Waypoint.Infinite({
+            element: $('.infinite-container')[0],
+            onBeforePageLoad: function () {
+            $('.loading').show();
+            },
+            onAfterPageLoad: function ($items) {
+            $('.loading').hide();
+            }
+        });
+        </script>
+        {% endif %}
+    {% else%} 
+        <!-- show login if user is not auth -->
+        <a href="/login/" class="tweet-this">login to view this page</p>
+    {% endif %}
+
+    <script>
+        let cancel = $(".cancel").length        
+        for(let i = 0; i < cancel; i++ ){
+             $('.cancel').eq(i).click(function(){
+                let sender = Number($(this).attr("sender"))
+                let msg = $(this).attr("msg")
+                let time = $(this).attr("time")
+                let msg_type = $(this).attr("msg_type")
+                let receiver = $(this).attr("receiver")
+                let message_id = $(this).attr("message_id")
+                $(this).parent().remove()
+                posts({sender_id: sender, msg_type: msg_type, message_id: message_id, time: time, msg: msg, receiver_id: receiver}, "/forum/remove-message/")
+            })
+        
+        }
+    </script>
+{% endblock %}

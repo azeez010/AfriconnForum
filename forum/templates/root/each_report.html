@@ -1,0 +1,39 @@
+{% extends "forum/base.html" %}
+{% block title %}Profile - {{user.username}}{% endblock %}
+{% block content %}
+{% load humanize %}
+{% if user.is_superuser %}
+    {% if type == "thread" %}
+    <h1>Report</h1>
+    <div class="allCard">  
+        <p class="tweet-color">Thread</p>
+        <p class="contentTitle">{{ object.title }}</p>
+        <p>{{ object.details }}</p>
+        <p>{{type}}</p>
+        <p><b></b>{{ object.datetime|naturaltime}}</p>
+        <p class="contentInfo"><i class="fa fa-user"></i>{{ object.user.username }}</p>
+        <button><a class="btnColor" href="/forum/thread/?category={{ object.category }}&slug={{ object.threadSlug }}&thread_no={{ object.id }}">view thread</a></button>
+        <button><a class="btnColor" href="/report/ban/{{ object.user.id }}/{{type}}/{{ object.id }}">Ban</a></button>
+        <button><a class="btnColor" href="/report/seen/{{type}}/{{ object.id }}">seen</a></button>
+    </div>
+     
+        {% elif type == "comment" %}     
+                <div class="allCard">  
+                    <p class="tweet-color">Comment</p>
+                    <p class="contentTitle">{{ object.title }}</p>
+                    <p>{{ object.comment }}</p>
+                    <p>{{type}}</p>
+                    <p><b></b>{{ object.datetime|naturaltime}}</p>
+                    <p class="contentInfo"><i class="fa fa-user"></i> {{ object.user.username }}</p>
+                    <button ><a class="btnColor" href="/forum/thread/{{ object.thread.category }}/{{ object.thread.threadSlug }}/{{ object.thread.id }}/#{{object.id}}">view comment</a></button >
+                    <button><a  class="btnColor"href="/report/ban/{{ object.user.id }}/{{type}}/{{ object.id }}">Ban</a></button>
+                    <button><a class="btnColor" href="/report/seen/{{type}}/{{ object.id }}">seen</a></button>
+                  </div>
+       {% endif %}
+       
+    <a href="/profile/report/" class="tweet-this"><i class="fa fa-arrow-left"></i> go back</a>
+{% else %}
+    <p>You are nothing allowed to view this page</p>
+{% endif %}
+
+{% endblock %}

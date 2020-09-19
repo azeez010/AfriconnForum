@@ -1,0 +1,12 @@
+{% extends "forum/base.html" %}
+{% block title %}country stats - for admin{% endblock %}
+{% block content %}
+<div class="allCard">
+    <h1>country stats</h1>
+    {% for user_country in all_countries|dictsortreversed:"no_of_user" %}
+        <p>{{user_country.country.name}} <img src="{{user_country.country.flag}}" alt="" srcset=""> - {{user_country.no_of_user}}</p>
+    {% empty %}
+        <p class="reddit-color">No country stats yet</p>
+    {% endfor %}
+</div>
+{% endblock %}

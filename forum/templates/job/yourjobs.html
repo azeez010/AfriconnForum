@@ -1,0 +1,65 @@
+{% extends "forum/base.html" %}
+{% block title %}Africonn - Jobs {% endblock %}
+{% load filterdata %}
+{% block content %}
+<br>
+<span style="font-size: 18px; cursor: pointer" class="tweet-color" onclick="window.history.back()"> <i class="fa fa-arrow-left"></i>go back</span>
+<br>
+{% if hasPost %}
+<p class="contentTitle">No job in this category now... be the first to create a job post
+    {% if user.is_authenticated %}
+        <a href="/jobs/create/">  <i class="fa fa-pen"></i>create job</a>
+    {% endif %}
+</p>
+{% endif %}
+
+<div class="infinite-container">
+    <div class="infinite-item">
+        {% for job in getJob %}
+        <div class="jobCard">
+            <div class="jobImg">
+                {% if job.jobImage %}
+                    <img class="jobImage" src="{{job.jobImage.url}}" alt="">
+                    {% else %}
+                    <img class="jobImage" src="/static/jobs.gif" alt="">
+                {% endif %}
+            </div>
+            <div class="jobInfo">
+                <a class="contentTitle spacing" href="/jobs/applicant/?title={{job.slugTitle}}&value={{ job.id }}">{{ job.title }}</a>
+                <p class="contentDetail"><b>{{ job.name_of_company }}</b></p>
+                <p class="contentDetail">{{ job.details | safe|urlFilter |trunc}}</p>
+                <span>{{ job.category }}</span>
+                <br>
+                <div class="spacing-bottom">
+                    <span class="contentInfo"><i class="fa fa-clock contentIcon"></i><i class="fa fa-bag contentIcon"></i> {{ job.datetime|blogDate }} </span>
+                    <span class="contentInfo"><i class="fa fa-user contentIcon"></i> {{ job.user.username }} </span>
+                </div>
+                <br>
+            </div>
+        </div>
+        {% endfor %}           
+    </div>
+</div>
+
+{% if getJob.has_next %}
+    <a class="infinite-more-link" href="/jobs/yourjobs/?page={{ getJob.next_page_number }}">More</a>
+{% endif %}
+
+<div class="loading" style="display: none;">
+    Loading...
+</div>
+
+<script src="/static/jquery.waypoints.min.js"></script>
+<script src="/static/infinite.min.js"></script>
+<script>
+    var infinite = new Waypoint.Infinite({
+    element: $('.infinite-container')[0],
+    onBeforePageLoad: function () {
+    $('.loading').show();
+    },
+    onAfterPageLoad: function ($items) {
+    $('.loading').hide();
+    }
+});
+</script>
+{% endblock %}

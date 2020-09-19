@@ -1,0 +1,37 @@
+{% extends "forum/base.html" %}
+{% block title %}Replies - africonn{% endblock %}
+{% block content %}
+{% load humanize %}
+
+{% if user.is_authenticated %}
+{% endif %}
+
+{% if replies.count == 0 %}
+    <p>No new replies</p>
+{% else %}
+<!-- msg for messages -->
+    {% for reply in replies %}
+        {% if reply.is_seen == False %}
+            <div class="allCard">  
+                <a href="/forum/thread/?hamlet={{ reply.comments.thread.thread_category.title }}&slug={{ reply.comments.thread.threadSlug }}&thread_no={{ reply.comments.thread.id }}#{{ reply.comments.id}}">
+                    <p class="contentTitle">{{ reply.comments.thread.title}}</p>
+                    {{ reply.comments.comment | safe }}</a>         
+                <p class="replyText">{{ reply.sender.username}} : {{ reply.comment }}</p>  
+                <p>time: {{reply.datetime|naturaltime}}</p>
+            </div>
+        {% else%}
+        <div class="thread-info">  
+            <a href="/forum/thread/?hamlet={{ reply.comments.thread.thread_category.title }}&slug={{ reply.comments.thread.threadSlug }}&thread_no={{ reply.comments.thread.id }}#{{ reply.comments.id}}">
+                <p class="contentTitle">{{ reply.comments.thread.title}}</p>
+                {{ reply.comments.comment | safe }}</a>     
+            <p class="replyText">{{ reply.sender.username}} : <span style="font-weight:900">{{ reply.comment }}</span></p>  
+            <p class="contentInfo"><i class="fa fa-clock"></i> {{reply.datetime|naturaltime}}</p>
+        </div>
+        {% endif %}
+    {% endfor %}
+{% endif %}
+
+<script>
+    
+</script>
+{% endblock %}

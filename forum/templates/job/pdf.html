@@ -1,0 +1,101 @@
+<head>
+    <style>
+        @page {
+            size: a4 portrait;
+            @frame header_frame {           /* Static Frame */
+                -pdf-frame-content: header_content;
+                left: 50pt; width: 512pt; top: 50pt; height: 40pt;
+            }
+            @frame content_frame {          /* Content Frame */
+                left: 50pt; width: 512pt; top: 90pt; height: 632pt;
+            }
+            @frame footer_frame {           /* Another static Frame */
+                -pdf-frame-content: footer_content;
+                left: 50pt; width: 512pt; top: 772pt; height: 20pt;
+            }
+        }
+        body{
+            margin-bottom: 0;
+        }
+            img {
+                width: 150px;
+                height: 150px;
+                left: 1000pt;
+            }
+            p {
+                font-size: 22px;
+                margin: 0;
+            }
+            #row{
+                display: flex;
+                grid-template-columns: 3fr 1fr;
+                grid-template-rows: 3fr 1fr;
+            }
+            hr{
+                margin-top: -10pt;
+            }
+            *{
+                margin: 0;
+            }
+            #placeholder{
+                color: grey;
+                font-size: 14px;
+            }
+    </style>
+    </head>
+    
+    <body>
+        <!-- Content for Static Frame 'header_frame' -->
+        <div id="header_content">
+            <h3>Afrikaz.com</h3>
+        </div>
+    
+        <!-- Content for Static Frame 'footer_frame' -->
+        <div id="footer_content">(c) - page <pdf:pagenumber>
+            of <pdf:pagecount>
+        </div>
+    
+        <!-- HTML Content -->
+    <div id="row">
+        <div>
+            {% if profile.profile_pic %}
+                <img src="{{profile.profile_pic.path}}" alt="img" srcset="">
+            {% else %}
+                <p id="placeholder">Upload your profile picture and update your profile to complete your resume </p>
+            {% endif %}
+        </div>
+        <div>
+            <p><b>Bio-Data</b></p>
+            <hr>
+            <p>First-Name: {{first}}</p>
+            <p>Last-Name: {{ last }}</p>
+            <p>Gender: {{profile.gender }}</p>
+            <p>Country: {{profile.country.name}}</p>
+            {% if profile.email %}
+                <p>E-mail: {{profile.email}}</p>
+            {% endif %}
+            {% if phone %}
+                <p>Phone: {{ phone }}</p>
+            {% endif %}
+            <p>Skills: {{skills}}</p>
+        </div>
+    </div>   
+        <br>
+        <p><b>Proposal</b></p>
+        <hr>
+        <p>{{proposal|safe}}</p>
+        {% if profile.about %}
+           <br>
+            <p><b>About {{first}}</b></p>
+            <hr>
+            <p>{{profile.about}}</p>
+        {% endif %}
+        
+        {% if Education_and_Work_experience %}
+            <br>
+            <p><b>{{first }}'s Education and Work experience</b></p>
+            <hr>
+                <p>{{Education_and_Work_experience|safe}}</p>
+        {% endif %}
+    </body>
+    </html>

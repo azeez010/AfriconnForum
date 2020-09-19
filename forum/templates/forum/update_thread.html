@@ -1,0 +1,16 @@
+{% extends "forum/base.html" %}
+{% block title %}Update - thread{% endblock %}
+{% block content %}
+{% load crispy_forms_tags %}
+    {% if user.is_authenticated and thread.user.id %}
+        <h3>Update Thread</h3>    
+    <form action="/forum/update-thread/{{thread.id}}/" method="post" enctype="multipart/form-data"> 
+                {% csrf_token %}
+                {{ form.media }}
+                {{ form | crispy}}
+        <input type="submit" value="post">
+    </form>
+    {% else %}
+        <p class="reddit-color">You are not allowed to edit this post, common you didn't create this thread</p>
+    {% endif %}
+{% endblock %}

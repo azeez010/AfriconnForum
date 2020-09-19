@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        .contentTitle{
+            margin-bottom: 8px;
+            font-size: 16pt;
+            font-weight: 900;
+            font-family: 'Microsoft Sans Serif Regular'
+        }
+    
+        h1{
+        color: rgba(253, 59, 0, 1);
+        }
+        #jobPageCard{
+            display: inline-block;
+            text-align: center;
+        }
+        .jobImageMain{
+            width: 180px;
+            height: 180px;
+            text-align: center;
+            margin-right: 8px ;
+        }
+        .tweet-color{
+            color:  rgb(29, 161, 242);
+            font-size: 18px
+        }
+    </style>
+</head>
+<body>
+    
+    <div id="jobPageCard">
+        <div>
+        <p class="contentTitle">{{ getJob.title }}
+        </p>
+        <p>by {{ getJob.name_of_company }}</p>
+        {% if getJob.jobImage %}
+            <img class="jobImageMain" src="{{ getJob.jobImage.url }}" alt="">
+        {% else %}
+            <img class="jobImageMain" src="/static/jobs.gif" alt="">
+        {% endif %}
+        
+        <h1 class="contentTitle">Description</h1>
+        <p style="text-align: left;">{{ getJob.details }} </p>
+       {% if getJob.pay %}
+            <h1 class="contentTitle">Pay</h1>
+            <p style="text-align: left;"><del style="text-decoration-style: double; text-decoration: line-through">N</del>{{ getJob.pay }} </p>
+        {% endif %}
+        
+        <h1 class="contentTitle">Category</h1>
+        <p style="text-align: left;">{{ getJob.category }} </p>
+    
+        <h1 class="contentTitle">Created on</h1>
+        <p style="text-align: left;">{{ getJob.datetime }} </p>
+        
+        <h1 class="contentTitle">Position</h1>
+        <p style="text-align: left;">{{ getJob.position }} </p>
+    
+    
+    </div>
+        <br>
+    <a href="{{url}}" class="tweet-color">click here to apply</a><br>
+    <p style="color:rgba(253, 59, 0, 1)">africonn.com &copy; 2020 - <span id="date"></span></p>
+    <br>
+    </div>
+    <script>
+        let year = document.getElementById("date")
+        year.innerHTML = new Date().getFullYear()
+    </script>
+</body>
+</html>

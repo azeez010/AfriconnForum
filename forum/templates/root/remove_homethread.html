@@ -1,0 +1,57 @@
+{% extends "forum/base.html" %}
+{% block title %}Admin remove homethread{% endblock %}
+{% block content %}
+{% load filterdata %}
+{% if user.is_superuser or user.is_staff  %}
+    <section>
+        {% for homethread in homepageThreads|dictsortreversed:"expiryDate" %}
+        <div class="threadCard">         
+            <div>
+                {% if homethread.thread.user.profile.profile_pic %}
+                    <img class="usericon" src="{{homethread.thread.user.profile.profile_pic.url}}" alt="">
+                {% else %}
+                    <div class="default_pic">{{homethread.thread.user.username|default_pic}}</div>
+                {% endif %}
+            </div>   
+            <div>
+                <a href="/profile/{{homethread.thread.user.username}}/" class="contentInfo">{{ homethread.thread.user.username }} </a>
+                <p style="margin-bottom: 5px;"><a class="contentTitle" href="/forum/thread/?category={{ homethread.thread.category }}&slug={{ homethread.thread.threadSlug }}&thread_no={{ homethread.thread.id }}">{{ homethread.thread.title }}</a></p>
+                <span class="contentInfo"><i class="fa fa-heart contentIcon"></i> {{ homethread.thread.thread_like_set.all|likenum:"True" }}</span>
+                <span class="contentInfo"><i class="fa fa-angry contentIcon"></i> {{ homethread.thread.thread_like_set.all|dislikenum:"True" }}</span>
+                                 <span class="contentInfo"><i class="fa fa-newspaper contentIcon"></i> {{ homethread.thread.category }}  </span>
+            
+                <div class="spacing-bottom">
+                  <span class="contentInfo"><i class="fa fa-clock contentIcon"></i> {{ homethread.thread.created_at|forumDate }} </span>
+                  <span class="contentInfo"><i class="fa fa-eye contentIcon"></i>  {{homethread.thread.views}} </span>
+                  <span class="contentInfo"><i class="fa fa-comment contentIcon"></i> {{homethread.thread.comment_set.all.count}}</span>
+                </div>
+                <button style="background: red" data="{{homethread.id}}" class="delete"><a style="color: white"><i  class="fa fa-trash"></i> remove</a></button>
+
+            </div>
+        </div>
+    {% endfor %}
+        
+    </section>
+
+
+<a href="/blog/your-blogs/"><i class="fa fa-arrow-left"></i> go back</a>
+<script>
+        let ads_list = $(".delete").length
+            function adsListFunc(list){
+                for(let i= 0; i < list; i++){
+                    $(".delete").eq(i).click(function(){
+                        let accept = window.confirm("Are you sure you want to remove this thread from the home page")
+                    if(accept){
+                        id = $(this).attr("data")
+                        window.location.href = `/remove-home/?id=${id}`
+                    }
+                    })
+                }
+        }
+        adsListFunc(ads_list)
+    </script>
+
+{% else %}
+    <p class="reddit-color">You are not allowed to view this page</p>
+{% endif %}
+{% endblock %}

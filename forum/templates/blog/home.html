@@ -1,0 +1,119 @@
+{% extends "forum/base.html" %}
+{% block title %}blog{% endblock %}
+{% block content %}
+{% load filterdata %}
+
+<p class="contentTitle">Blog</p> 
+<div>
+    <a style="color: {{theme_color}}">Popular categories</a> 
+    <a href="/blog/categories/programming">programming</a>
+    <a href="/blog/categories/celebrities">celebrities</a>
+    <a href="/blog/categories/education">education</a>
+    <a href="/blog/categories/health">health</a>
+    <a href="/blog/categories/lifestyle">lifestyle</a>
+    <a href="/blog/categories/science">science</a>
+    <a href="/blog/categories/arts">arts</a>
+    <a href="/blog/categories/news">news</a>
+    <a href="/blog/categories/sport">sport</a>
+    <a href="/blog/categories/finance">finance</a>
+    <a href="/blog/categories/technology">technology</a>
+    <a href="/blog/categories/politics">politics</a>
+</div>
+<h1>New!</h1>   
+{% for blog in getBlog %}
+<div class="blogCard">
+    <div class="blogImg">
+        {% if blog.image %}
+            <img class="blogImage" src="{{blog.image.url}}" alt="">
+            {% else %}
+            <img class="blogImage" src="/static/blog.gif" alt="">
+        {% endif %}
+    </div>
+    <div class="blogInfo">
+            {% if fav|GetFavBlog:blog.id == request.user.id  %}
+                <i style="float: right;" data="{{ blog.id }}" title="{{blog.title}}" bool="true" class="fa fa-star angry-checked fav_blog"></i>
+                {% else %}
+                <i style="float: right;" data="{{ blog.id }}" title="{{blog.title}}"  bool="false" class="fa fa-star angry-unchecked fav_blog" ></i>
+            {% endif %}
+            <a class="contentTitle spacing" href="/blog/each/?title={{blog.slugTitle}}&value={{blog.id}}">{{ blog.title }}</a>
+            <p class="contentDetail">{{ blog.details | trunc | safe}}</p>
+            <br>
+            <div class="spacing-bottom">
+                <span class="contentInfo"><i class="fa fa-clock contentIcon"></i> {{ blog.datetime|blogDate }} </span>
+                <span class="contentInfo"><i class="fa fa-user contentIcon"></i> {{ blog.user.username }} </span>
+                <span class="contentInfo"><i class="fa fa-book contentIcon"></i> {{ blog.title|blogReadTime }} min read </span>
+            </div>
+            <br>
+    </div>
+
+</div>
+
+{% endfor %}
+
+<h2><i style="color: red" class="fa fa-fire"></i> <span class="contentTitle">Trending</span> </h2>
+{% for blog in trending %}
+<div class="blogCard">
+    <div class="blogImg">
+        {% if blog.image %}
+            <img class="blogImage" src="{{blog.image.url}}" alt="">
+            {% else %}
+            <img class="blogImage" src="/static/blog.gif" alt="">
+        {% endif %}
+    </div>
+    <div class="blogInfo">
+            {% if fav|GetFavBlog:blog.id == request.user.id  %}
+                <i style="float: right;" data="{{ blog.id }}" title="{{blog.title}}" bool="true" class="fa fa-star angry-checked fav_blog"></i>
+                {% else %}
+                <i style="float: right;" data="{{ blog.id }}" title="{{blog.title}}"  bool="false" class="fa fa-star angry-unchecked fav_blog" ></i>
+            {% endif %}
+            <a class="contentTitle spacing" href="/blog/each/?title={{blog.slugTitle}}&value={{blog.id}}">{{ blog.title }}</a>
+            <p class="contentDetail">{{ blog.details | trunc | safe}}</p>
+            <br>
+            <div class="spacing-bottom">
+                <span class="contentInfo"><i class="fa fa-clock contentIcon"></i> {{ blog.datetime|blogDate }} </span>
+                <span class="contentInfo"><i class="fa fa-user contentIcon"></i> {{ blog.user.username }} </span>
+                <span class="contentInfo"><i class="fa fa-book contentIcon"></i> {{ blog.title|blogReadTime }} min read </span>
+            </div>
+            <br>
+    </div>
+
+</div>
+{% endfor %}
+
+
+
+{% if user.is_authenticated %}
+    <br>
+    <a href="/blog/create/"><i class="fa fa-pen"></i> write</a>
+    <a href="/blog/your-blogs/"><i class="fa fa-newspaper"></i> your blogs</a>
+{% endif %}
+
+<script>
+let fav = $('.fav_blog').length
+for(let i = 0; i < fav; i++){
+    $('.fav_blog').eq(i).click(function(){
+        if($(this).attr("bool") == "false"){
+            let thread_id = Number($(this).attr("data"))
+            category = "blog"
+            title = $(this).attr("title")
+            let app = "blog"
+            let toggleBool = "True"
+            posts({href: window.location.href, thread_id: thread_id, title, app, category, toggleBool}, "/forum/favourite/")
+            $(this).attr("bool", "true")
+            $(this).css("color", "orange")
+        }
+        else{
+            let thread_id = Number($(this).attr("data"))
+            $(this).attr("bool", "false")
+            $(this).css("color", "transparent")
+            let category = "blog"
+            let title = "{{newblogs.title}}"
+            let app = "blog"
+            let toggleBool = ""
+            posts({href: window.location.href, thread_id: thread_id, title, category, app, toggleBool}, "/forum/favourite/")
+        }
+    }) 
+    
+} 
+</script>
+{% endblock %}

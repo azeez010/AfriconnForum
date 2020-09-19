@@ -1,0 +1,21 @@
+{% extends "forum/base.html" %}
+{% block title %}Blog{% endblock %}
+{% block content %}
+{% load crispy_forms_tags %}
+
+{% if user.is_authenticated %}
+    <h3>create blog</h3>    
+    <form id="form" action="/blog/create/" method="post" enctype="multipart/form-data">
+        {{ blog.media }}
+        {% csrf_token %}
+        {{blog|crispy}}
+        <input id="button" type="submit" value="submit">
+    </form>
+
+    <script>
+        $("#form").submit(function(event){
+            $("#button").attr("disabled", true)
+        })
+    </script>
+    {% endif %}
+{% endblock %}

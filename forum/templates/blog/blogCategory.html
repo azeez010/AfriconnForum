@@ -1,0 +1,141 @@
+{% extends "forum/base.html" %}
+{% block title %}blogs - {{ category }}{% endblock %}
+{% block content %}
+{% load filterdata %}
+{% load humanize %}
+
+<p class="contentTitle">{{ category }}</p> 
+
+    <div class="infinite-container">
+        <div class="infinite-item">
+            {% for blog in searches %}
+            <div class="blogCard">
+                <div class="blogImg">
+                    {% if blog.image %}
+                        <img class="blogImage" src="{{blog.image.url}}" alt="">
+                        {% else %}
+                        <img class="blogImage" src="/static/blog.gif" alt="">
+                    {% endif %}
+                </div>
+                <div class="blogInfo">
+                        {% if fav|GetFavBlog:blog.id == request.user.id  %}
+                            <i style="float: right;" data="{{ blog.id }}" title="{{blog.title}}" bool="true" class="fa fa-star angry-checked fav_blog"></i>
+                            {% else %}
+                            <i style="float: right;" data="{{ blog.id }}" title="{{blog.title}}"  bool="false" class="fa fa-star angry-unchecked fav_blog" ></i>
+                        {% endif %}
+                        <a class="contentTitle spacing" href="/blog/each/?title={{blog.slugTitle}}&value={{blog.id}}">{{ blog.title }}</a>
+                        <p class="contentDetail">{{ blog.details | trunc | safe}}</p>
+                        <br>
+                        <div class="spacing-bottom">
+                            <span class="contentInfo"><i class="fa fa-clock contentIcon"></i> {{ blog.datetime|blogDate }} </span>
+                            <span class="contentInfo"><i class="fa fa-user contentIcon"></i> {{ blog.user.username }} </span>
+                            <span class="contentInfo"><i class="fa fa-book contentIcon"></i> {{ blog.title|blogReadTime }} min read </span>
+                        </div>
+                        <br>
+                </div>
+            </div>
+                {% endfor %}
+          </div>
+    </div>
+    
+    {% if searches.has_next %}
+        <a class="infinite-more-link" href="/blog/categories/{{ category }}/?page={{ searches.next_page_number }}">More</a>
+    {% endif %}
+    
+    <div class="loading" style="display: none;">
+        Loading...
+    </div>
+    
+    <a href="/blog/home/"><i class="fa fa-arrow-left"></i>go back</a>
+    {% if user.is_authenticated %}
+        <a href="/blog/create/"><i class="fa fa-pen"></i>create blog</a>
+    {% endif %}
+
+    
+<script>
+    let ad_data = "{{serialized_ad}}".replace(/&quot;/g,'"')
+    let ad_dict = JSON.parse(ad_data)    
+    $("#main-content").children().each(function(index){
+        if(ad_dict.length == 0) return true
+        if( index % 5 == 3){
+          let ad = ad_dict.shift()
+          let urlLink = ad.advert_url
+         
+          if(!urlLink.match("http")){
+            urlLink =  `http:\\\\${ad.advert_url}`
+          }
+          
+          $(this).after(`<div class="advertCard">
+              <div>
+                  <img class="ads" src="/media/${ad.advert}" alt="">
+              </div>
+              <div class="adContents">
+                <p class="whatsapp-this">SPONSORED</p>
+                <p>${ad.advert_title}</p>
+                  <p>${ad.advert_details}</p>
+                <button><a style="color:white" href="${urlLink}" target="_blank">Visit Site</a></button>
+              </div>`
+              )
+          }
+        })
+    </script>
+    
+
+    <script>
+    function countdown(){
+        for(let i = 0; i < $(".expirydate").length; i++){
+            let timeleft= Number($(".expirydate").eq(i).attr("timeleft"))
+            $(".expirydate").eq(i).text(`${Math.floor((timeleft / (24 * 3600000))) == 0 ? "" : Math.floor((timeleft / (24 * 3600000))) + " days"}  ${Math.floor((timeleft / (3600000) % 24)) == 0 ? "" : Math.floor((timeleft /(3600000) % 24)) + " hours"}  ${Math.floor((timeleft / 60000) % 60)} min left`)
+        }
+    }
+    countdown()
+    let timeout = setInterval(()=>countdown(), 60000)
+    
+    </script>
+    
+    <script src="/static/jquery.waypoints.min.js"></script>
+    <script src="/static/infinite.min.js"></script>
+    
+    <script>
+        var infinite = new Waypoint.Infinite({
+        element: $('.infinite-container')[0],
+        onBeforePageLoad: function () {
+        $('.loading').show();
+        },
+        onAfterPageLoad: function ($items) {
+        $('.loading').hide();
+        }
+    });
+    </script>
+    
+<script>
+let fav = $('.fav_blog').length
+for(let i = 0; i < fav; i++){
+    $('.fav_blog').eq(i).click(function(){
+        if($(this).attr("bool") == "false"){
+            let thread_id = Number($(this).attr("data"))
+            category = "blog"
+            let title = $(this).attr("title")
+            let app = "blog"
+            let toggleBool = "True"
+            let url = `/blog/each/?title=${title}&value=${thread_id}` 
+            posts({href: url, thread_id: thread_id, title, app, category, toggleBool}, "/forum/favourite/")
+            $(this).attr("bool", "true")
+            $(this).css("color", "orange")
+        }
+        else{
+            let thread_id = Number($(this).attr("data"))
+            $(this).attr("bool", "false")
+            $(this).css("color", "transparent")
+            let category = "blog"
+            let title = $(this).attr("title")
+            let app = "blog"
+            let toggleBool = ""
+            let url = `/blog/each/?title=${title}&value=${thread_id}` 
+            posts({href: url, thread_id: thread_id, title, category, app, toggleBool}, "/forum/favourite/")
+        }
+    }) 
+    
+} 
+</script>
+{% endblock %}

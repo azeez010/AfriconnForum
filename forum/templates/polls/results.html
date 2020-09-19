@@ -1,0 +1,28 @@
+{% extends "forum/base.html" %}
+{% load filterdata %}
+{% block title %}poll result{% endblock %}
+{% block content %}
+
+<p class="contentTitle" style="color: {{theme_color}}">polls results</p>     
+{% for poll in pollresult %}
+        <div class="pollCard">
+            <div class="pollImg">
+                {% if poll.pollImage %}
+                    <img class="pollImage" src="{{poll.pollImage.url}}" alt="">
+                    {% else %}
+                    <img class="pollImage" src="/static/polls.gif" alt="">
+                {% endif %}
+            </div>
+            <div class="pollInfo">              
+              <a href="/polls/result/?title={{poll.slugTitle}}&value={{poll.id}}"><p>{{poll.title}}</p></a>
+              <p class="expirydate" expired="{{poll.expiryDate|ExpiredFinalTime}}">Expired on {{poll.expiryDate|ExpiredFinalTime}}</p>
+                <div class="spacing-bottom">
+                    <span class="contentInfo"><i class="fa fa-clock contentIcon"></i><i class="fa fa-bag contentIcon"></i> {{ poll.datetime|blogDate }} </span>
+                    <a href="/profile/{{ poll.user.username }}/" class="contentInfo"><i class="fa fa-user contentIcon"></i> {{ poll.user.username }} </a>
+                </div>
+                <br>
+            </div>
+        
+        </div>
+        {% endfor %}
+{% endblock %}

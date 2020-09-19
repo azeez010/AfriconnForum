@@ -1,0 +1,103 @@
+{% extends "forum/base.html" %}
+{% block title %}Afrikaz - Jobs {% endblock %}
+{% load filterdata %}
+{% block content %}
+
+{% if hasPost %}
+<p class="contentTitle whatsapp-this">No job in this category now... be the first to create a job post
+    {% if user.is_authenticated %}
+        <a class="whatsapp-this" href="/jobs/create/">  <i class="fa fa-pen"></i>create job</a c>
+    {% endif %}
+</p>
+{% endif %}
+
+<div class="infinite-container">
+    <div class="infinite-item">
+        {% for job in getJob %}
+        <div class="jobCard">
+            <div class="jobImg">
+                {% if job.jobImage %}
+                    <img class="jobImage" src="{{job.jobImage.url}}" alt="">
+                    {% else %}
+                    <img class="jobImage" src="/static/jobs.gif" alt="">
+                {% endif %}
+            </div>
+            <div class="jobInfo">
+                <a class="contentTitle spacing" href="/jobs/jobpage/?title={{job.slugTitle}}&value={{ job.id }}">{{ job.title }}</a>
+                    {% if fav|GetFav:job.id and fav|GetFav:job.id == request.user.id  %}
+                        <i data="{{ job.id }}" category="{{job.category}}" title="{{job.title}}" bool="true" class="fa fa-star angry-checked fav_Job"></i>
+                        {% else %}
+                        <i data="{{ job.id }}"category="{{job.category}}" title="{{job.title}}"  bool="false" class="fa fa-star angry-unchecked fav_Job" ></i>
+                    {% endif %}
+        
+                <p class="contentDetail"><b>{{ job.name_of_company }}</b></p>
+                <p class="contentDetail">{{ job.details | safe |trunc}}</p>
+                <span>{{ job.category }}</span>
+                <br>
+                <div class="spacing-bottom">
+                    <span class="contentInfo"><i class="fa fa-clock contentIcon"></i><i class="fa fa-bag contentIcon"></i> {{ job.datetime|blogDate }} </span>
+                    <span class="contentInfo"><i class="fa fa-user contentIcon"></i> {{ job.user.username }} </span>
+                </div>
+                <br>
+            </div>
+        </div>
+        {% endfor %}           
+    </div>
+</div>
+
+{% if getJob.has_next %}
+<a class="infinite-more-link" href="/jobs/joblist/?category={{category}}&page={{ getJob.next_page_number }}">More</a>
+{% endif %}
+
+<div class="loading" style="display: none;">
+    Loading...
+</div>
+
+<script src="/static/jquery.waypoints.min.js"></script>
+<script src="/static/infinite.min.js"></script>
+
+<script>
+    var infinite = new Waypoint.Infinite({
+    element: $('.infinite-container')[0],
+    onBeforePageLoad: function () {
+    $('.loading').show();
+    },
+    onAfterPageLoad: function ($items) {
+    $('.loading').hide();
+    }
+});
+</script>
+
+
+<script>
+    let fav = $('.fav_Job').length
+    for(let i = 0; i < fav; i++){
+        $('.fav_Job').eq(i).click(function(){
+            if($(this).attr("bool") == "false"){
+                let thread_id = Number($(this).attr("data"))
+                category = $(this).attr("category")
+                title = $(this).attr("title")
+                let app = "job"
+                let toggleBool = "True"
+                posts({href: window.location.href, thread_id: thread_id, title, app, category, toggleBool}, "/forum/favourite/")
+                $(this).attr("bool", "true")
+                $(this).css("color", "orange")
+            }
+            else{
+                let thread_id = Number($(this).attr("data"))
+                $(this).attr("bool", "false")
+                $(this).css("color", "transparent")
+                let category = "{{getJob.category}}"
+                let title = "{{getJob.title}}"
+                let app = "job"
+                let toggleBool = ""
+                posts({href: window.location.href, thread_id: thread_id, title, category, app, toggleBool}, "/forum/favourite/")
+            }
+        }) 
+        
+    } 
+    </script>
+    
+
+
+{% endblock %}

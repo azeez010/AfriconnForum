@@ -1,0 +1,14 @@
+{% extends "forum/base.html" %}
+{% block title %}update hamlet!{% endblock %}
+{% block content %}
+{% load crispy_forms_tags %}
+    {% if user.is_authenticated and category.created_by.id == user.id  %}
+        <form action="/forum/hamlet/{{category.id}}/update" method="post" enctype="multipart/form-data"> 
+                    {% csrf_token %}
+                    {{ form | crispy}}
+            <input type="submit" value="post">
+        </form>
+    {% else %}
+        <p class="reddit-color">You are not allowed to edit this post, common you didn't create this hamlet</p>
+    {% endif %}
+{% endblock %}

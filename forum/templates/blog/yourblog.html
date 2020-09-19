@@ -1,0 +1,83 @@
+{% extends "forum/base.html" %}
+{% block title %}Your blogs{% endblock %}
+{% block content %}
+{% load filterdata %}
+{% load humanize %}
+
+{% if noPost %}
+<p class="contentTitle">You have not written any blog on this platform, click below to start writing </p>
+<a href="/blog/home/"><i class="fa fa-home"></i>go home</a>
+{% if user.is_authenticated %}
+    <a href="/blog/create/"><i class="fa fa-pen"></i>create blog</a>
+{% endif %}
+{% else %} 
+
+<p class="contentTitle">Your Blogs</p>
+        <div class="infinite-container">
+            <div class="infinite-item">
+                {% for blog in getBlog %}
+                <div class="blogCard">
+                    <div class="blogImg">
+                        {% if blog.image %}
+                            <img class="blogImage" src="{{blog.image.url}}" alt="">
+                            {% else %}
+                            <img class="blogImage" src="/static/blog.gif" alt="">
+                        {% endif %}
+                    </div>
+                    <div class="blogInfo">
+                            <a class="contentTitle spacing" href="/blog/author-dashboard/?title={{blog.slugTitle}}&value={{ blog.id }}">{{ blog.title }}</a>
+                            <p class="contentDetail">{{ blog.details | trunc | safe}}</p>
+                            <br>
+                            <div class="spacing-bottom">
+                                <span class="contentInfo"><i class="fa fa-clock contentIcon"></i> {{ blog.datetime|blogDate }} </span>
+                                <span class="contentInfo"><i class="fa fa-user contentIcon"></i> {{ blog.user.username }} </span>
+                                <span class="contentInfo"><i class="fa fa-book contentIcon"></i> {{ blog.title|blogReadTime }} min read </span>
+                            </div>
+                            <br>
+                    </div>
+                </div>
+                    {% endfor %}
+            </div>
+        </div>
+
+        <a onclick="window.history.back()" class="tweet-color"><i class="fa fa-arrow-left"></i> go back</a>
+
+        {% if user.is_authenticated %}
+        <a href="/blog/create/"><i class="fa fa-pen"></i>create blog</a>
+    {% endif %}
+
+        {% if getBlog.has_next %}
+            <a class="infinite-more-link" href="/polls/new/?page={{ getBlog.next_page_number }}">More</a>
+        {% endif %}
+        
+        <div class="loading" style="display: none;">
+            Loading...
+        </div>
+    <script>
+    function countdown(){
+        for(let i = 0; i < $(".expirydate").length; i++){
+            let timeleft= Number($(".expirydate").eq(i).attr("timeleft"))
+            $(".expirydate").eq(i).text(`${Math.floor((timeleft / (24 * 3600000))) == 0 ? "" : Math.floor((timeleft / (24 * 3600000))) + " days"}  ${Math.floor((timeleft / (3600000) % 24)) == 0 ? "" : Math.floor((timeleft /(3600000) % 24)) + " hours"}  ${Math.floor((timeleft / 60000) % 60)} min left`)
+        }
+    }
+    countdown()
+    let timeout = setInterval(()=>countdown(), 60000)
+    
+    </script>
+    
+    <script src="/static/jquery.waypoints.min.js"></script>
+    <script src="/static/infinite.min.js"></script>
+    
+    <script>
+        var infinite = new Waypoint.Infinite({
+        element: $('.infinite-container')[0],
+        onBeforePageLoad: function () {
+        $('.loading').show();
+        },
+        onAfterPageLoad: function ($items) {
+        $('.loading').hide();
+        }
+    });
+    </script>
+    {% endif %}
+{% endblock %}

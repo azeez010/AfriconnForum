@@ -1,0 +1,233 @@
+{% extends "forum/base.html" %}
+{% block title %}Forum - Home{% endblock %}
+{% block content %}
+{% load filterdata %}
+    <a style="color: {{theme_color}}" class="contentTitle">Popular hamlets</a> 
+    <br>
+    <br>
+    {% for hamlet in popular_hamlets %}
+        <div class="threadCard">         
+            <div>
+                {% if hamlet.image %}
+                    <img class="usericon" src="{{hamlet.image.url}}" alt="">
+                {% else %}
+                    <img class="usericon" src="/static/hamlet.png" alt="hamlet default image">
+                {% endif %}
+            </div>   
+            <div>
+                <a class="contentTitle" href="/forum/hamlet/{{hamlet.title}}/{{hamlet.id}}/">{{hamlet.title}}</a>
+                <p>{{hamlet.description}}</p>
+                <a  href="/profile/{{hamlet.created_by.username}}/" class="contentInfo"><i class="fa fa-user "></i> {{hamlet.created_by.username}}</a> 
+                <span class="contentInfo">{{hamlet.members_set.all.count|numba_of_views}} members</span>
+                <span class="contentInfo">{{hamlet.no_of_thread}} threads</span>
+            </div>
+        </div>
+    {% empty %}
+        <p class="reddit-color">No hamlet yet</p>
+    {% endfor %}
+    <a style="color: orangered" href="/forum/all-categories/">click to see more..</a>
+        
+    <section>
+<h2><i style="color: red" class="fa fa-fire"></i> <span class="contentTitle">Trending threads</span> </h2>
+    {% for thread in trending_threads %}
+    <div class="threadCard">         
+        <div>
+            {% if thread.user.profile.profile_pic %}
+                <img class="usericon" src="{{thread.user.profile.profile_pic.url}}" alt="">
+            {% else %}
+                <div class="default_pic">{{thread.user.username|default_pic}}</div>
+            {% endif %}
+        </div>   
+        <div>
+            <a href="/profile/{{thread.user.username}}/" class="contentInfo">{{ thread.user.username }} </a>
+            <p><a class="contentTitle" href="/forum/thread/?hamlet={{ thread.thread_category.id }}&slug={{ thread.threadSlug }}&thread_no={{ thread.id }}">{{ thread.title }}</a></p>
+            <p class="threadSummary">{{thread.details|trunc|urlFilter|safe}}</p>
+            <span class="contentInfo"><i class="fa fa-heart contentIcon"></i> {{ thread.thread_like_set.all|likenum:"True" }}</span>
+            <span class="contentInfo"><i class="fa fa-angry contentIcon"></i> {{ thread.thread_like_set.all|dislikenum:"True" }}</span>
+            <span class="contentInfo" ><i class="fa fa-newspaper contentIcon"></i><a class="contentInfo" href="/forum/hamlet/{{ thread.thread_category.title}}/{{ thread.thread_category.id}}/">{{ thread.thread_category.title}}</a></span>
+            {% if thread.created_at|new_threads %}
+              <span class="new_threads">New!</span>
+            {% endif %}
+             
+            <div class="spacing-bottom">
+              <span class="contentInfo"><i class="fa fa-clock contentIcon"></i> {{ thread.created_at|forumDate }} </span>
+              <span class="contentInfo"><i class="fa fa-eye contentIcon"></i>  {{thread.views}} </span>
+              <span class="contentInfo"><i class="fa fa-comment contentIcon"></i> {{thread.comment_set.all.count}}</span>
+            </div>
+        </div>
+    </div>
+{% endfor %}
+
+<h2><i class="fa fa-user tweet-color"></i> <span class="contentTitle">User's Push</span> </h2>
+
+        <div class="infinite-container">
+            <div class="infinite-item">
+                
+        {% for homethread in thread_post|dictsortreversed:"expiryDate" %}
+        <div class="threadCard">         
+            <div>
+                {% if homethread.thread.user.profile.profile_pic %}
+                    <img class="usericon" src="{{homethread.thread.user.profile.profile_pic.url}}" alt="">
+                {% else %}
+                    <div class="default_pic">{{homethread.thread.user.username|default_pic}}</div>
+                {% endif %}
+            </div>   
+            <div>
+                <a href="/profile/{{homethread.thread.user.username}}/" class="contentInfo">{{ homethread.thread.user.username }} </a>
+                <p style="margin-bottom: 5px;"><a class="contentTitle" href="/forum/thread/?hamlet={{ homethread.thread.thread_category.id }}&slug={{ homethread.thread.threadSlug }}&thread_no={{ homethread.thread.id }}">{{ homethread.thread.title }}</a></p>
+                <p class="threadSummary">{{homethread.thread.details|trunc|urlFilter|safe}}</p>
+                <span class="contentInfo"><i class="fa fa-heart contentIcon"></i> {{ homethread.thread.thread_like_set.all|likenum:"True" }}</span>
+                <span class="contentInfo"><i class="fa fa-angry contentIcon"></i> {{ homethread.thread.thread_like_set.all|dislikenum:"True" }}</span>
+                <span class="contentInfo"><i class="fa fa-newspaper contentIcon"></i> {{ homethread.thread.thread_category.title }}  </span>
+                {% if homethread.thread.created_at|new_threads %}
+                  <span class="new_threads">New!</span>
+                {% endif %}
+                 
+                <div class="spacing-bottom">
+                  <span class="contentInfo"><i class="fa fa-clock contentIcon"></i> {{ homethread.thread.created_at|forumDate }} </span>
+                  <span class="contentInfo"><i class="fa fa-eye contentIcon"></i>  {{homethread.thread.views}} </span>
+                  <span class="contentInfo"><i class="fa fa-comment contentIcon"></i> {{homethread.thread.comment_set.all.count}}</span>
+                </div>
+            </div>
+        </div>
+    {% endfor %}         
+            </div>
+        </div>
+        
+        {% if thread_post.has_next %}
+            <a class="infinite-more-link" href="/forum/home/?page={{ thread_post.next_page_number }}">More</a>
+        {% endif %}
+        
+        <div class="loading" style="display: none;">
+            Loading...
+        </div>
+        
+        
+    </section>
+    
+<script src="/static/jquery.waypoints.min.js"></script>
+<script src="/static/infinite.min.js"></script>
+<script src="/static/promotion.js"></script>
+<script>
+         let ad_data = "{{serialized_ad}}".replace(/&quot;/g,'"')
+            let ad_dict = JSON.parse(ad_data)
+            let all_member = "{{all_members}}".replace(/&quot;/g,'"')
+            let all_dict = JSON.parse(all_member)
+            
+         
+            var resizeOnce = 0;
+            window.addEventListener("resize", promote)
+            function promote(){
+                var max = "(max-width: 600px)"
+                if(window.matchMedia(max).matches){
+                    $("#container").css({"display": "grid", "grid-template-columns": "1fr"}) 
+                    if(resizeOnce == 0){
+                    $("section").children().each(function(index){
+                    if(ad_dict.length == 0) return true
+                        if( index % 5 == 3){
+                        let ad = ad_dict.shift()
+                        if(ad.model == "forum.members"){
+                            let memberFiltered = all_dict.filter(member => member.pk == ad.fields.hamlet )
+                            let image = memberFiltered[0].fields.image_url ? `<img class="usericon" src="${memberFiltered[0].fields.image_url}" alt="">` : `<img class="usericon" src="/static/hamlet.png" alt="hamlet default image">` 
+                                $(this).after(`<div class="threadCard">         
+                                <div>
+                                    ${image}
+                                </div>   
+                                <div>
+                                    <p class="whatsapp-color">PROMOTED</p>
+                                    <a class="contentTitle" href="/forum/hamlet/${memberFiltered[0].fields.title}/${memberFiltered[0].pk}/">${memberFiltered[0].fields.title}</a>
+                                    <p>${memberFiltered[0].fields.description}</p>
+                                    <a  href="/profile/{{community.created_by.username}}/" class="contentInfo"><i class="fa fa-user "></i> {{community.created_by.username}}</a> 
+                                    <span class="contentInfo">${memberFiltered[0].fields.no_of_thread} threads</span>
+                                    </div>
+                            </div>`)
+                        }
+                        else{
+                            let urlLink = ad.fields.advert_url
+                        
+                        if(!urlLink.match("http")){
+                            urlLink =  `http:\\\\${ad.fields.advert_url}`
+                            }
+                        
+                        $(this).after(`<div class="advertCard">
+                            <div>
+                                <img class="ads" src="${ad.fields.advert_image_url}" alt="">
+                            </div>
+                            <div class="adContents">
+                                <p class="whatsapp-color">SPONSORED</p>
+                                <p>${ad.fields.advert_title}</p>
+                                <p class="contentInfo">${ad.fields.advert_details}</p>
+                                <button><a style="color:white" href="${urlLink}" target="_blank">Visit Site</a></button>
+                            </div>`
+                            )        
+                        }
+                        }
+                    })
+                        }
+                    }
+                else{
+                    $("#container").css({"display": "grid", "grid-template-columns": "1fr 3.5fr 1fr"})    
+                    if(resizeOnce == 0){
+                        $("#container").append(`<div id="promotedDiv"></div>`)
+                        $("#promotedDiv").append("<div id='ads'></div>")
+                        ad_dict.forEach((ad)=>{
+                        // console.log($("#promotedDiv"))
+                        if(ad.model == "forum.members"){
+                            let memberFiltered = all_dict.filter(member => member.pk == ad.fields.hamlet )
+                            let image = memberFiltered[0].fields.image_url ? `<img class="usericon" src="${memberFiltered[0].fields.image_url}" alt="">` : `<img class="usericon" src="/static/hamlet.png" alt="hamlet default image">` 
+                                $("#ads").append(`<div class='promoCard'>         
+                                <div>
+                                    ${image}
+                                </div>   
+                                <div>
+                                    <p class="whatsapp-color">PROMOTED</p>
+                                    <a class="contentTitle" href="/forum/hamlet/${memberFiltered[0].fields.title}/${memberFiltered[0].pk}/">${memberFiltered[0].fields.title}</a>
+                                    <p>${memberFiltered[0].fields.description}</p>
+                                    <a  href="/profile/{{community.created_by.username}}/" class="contentInfo"><i class="fa fa-user "></i> {{community.created_by.username}}</a> 
+                                    <span class="contentInfo">${memberFiltered[0].fields.no_of_thread} threads</span>
+                                    </div>
+                            </div>`)
+                        }
+                        else{
+                            let urlLink = ad.fields.advert_url
+                        
+                            if(!urlLink.match("http")){
+                                urlLink =  `http:\\\\${ad.fields.advert_url}`
+                                }
+                            
+                            $("#ads").append(`<div class="advertCard">
+                                <div>
+                                    <img class="ads" src="${ad.fields.advert_image_url}" alt="">
+                                </div>
+                                <div class="adContents">
+                                    <p class="whatsapp-color">SPONSORED</p>
+                                    <p>${ad.fields.advert_title}</p>
+                                    <p>${ad.fields.advert_details}</p>
+                                    <button class="adsButton"><a style="color:white" href="${urlLink}" target="_blank">Visit Site</a></button>
+                                </div>`
+                                )        
+                            }
+                            })         
+                    // $("#container").append("<div class='promoCard'>h1</div>")
+                    }
+                }
+                resizeOnce++
+            }
+            promote()
+
+    </script>
+    
+<script>
+    var infinite = new Waypoint.Infinite({
+    element: $('.infinite-container')[0],
+    onBeforePageLoad: function () {
+    $('.loading').show();
+    },
+    onAfterPageLoad: function ($items) {
+    $('.loading').hide();
+    }
+});
+</script>
+
+
+{% endblock %}

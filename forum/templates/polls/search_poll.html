@@ -1,0 +1,87 @@
+{% extends "forum/base.html" %}
+{% block title %}active polls {% endblock %}
+{% block content %}
+{% load filterdata %}
+<!-- hide the search icon -->
+<style>
+    #search-poll{
+        display: none;
+    }
+</style>
+<form action="/polls/search-poll/"method="POST">
+    {% csrf_token %}
+    <div style="display: flex; justify-content: space-between;">
+        <input type="search" name="search" placeholder="search polls, result...">
+        <button style="border-radius: 50%; background: none; background-color: white; border: 1px black solid; height: 30px; width: 30px"><i style="color: black; position: absolute; margin-left: -6px; margin-top: -6px;" id="searchForum" class="fa fa-search"></i></button>
+    </div>
+</form>
+
+<div class="infinite-container">
+    <div class="infinite-item">
+        {% for poll in searches %}
+        <div class="pollCard">
+            <div class="pollImg">
+                {% if poll.pollImage %}
+                    <img class="pollImage" src="{{poll.pollImage.url}}" alt="">
+                    {% else %}
+                    <img class="pollImage" src="/static/polls.gif" alt="">
+                {% endif %}
+            </div>
+            <div class="pollInfo">
+                <a class="contentTitle spacing" href="/polls/poll/?title={{poll.slugTitle}}&value={{poll.id}}">{{ poll.title }}</a>
+                <p class="expirydate" timeleft="{{poll.expiryDate|pollNewExpiryTime}}" ></p>
+                <div class="spacing-bottom">
+                    <span class="contentInfo"><i class="fa fa-clock contentIcon"></i><i class="fa fa-bag contentIcon"></i> {{ poll.datetime|blogDate }} </span>
+                    <a href="/profile/{{ poll.user.username }}/" class="contentInfo"><i class="fa fa-user contentIcon"></i> {{ poll.user.username }} </a>
+                </div>
+                <br>
+            </div>
+        
+        </div>
+        {% endfor %}           
+    </div>
+</div>
+
+{% if searches.has_next %}
+    <a class="infinite-more-link" href="/polls/new/?page={{ searches.next_page_number }}">More</a>
+{% endif %}
+
+<div class="loading" style="display: none;">
+    Loading...
+</div>
+
+{% if user.is_authenticated %}
+    <a href="/polls/create/"><i class="fa fa-pen"></i> create polls</a>
+    <a href="/polls/your-polls/"><i class="fa fa-newspaper"></i> your polls</a>
+{% endif %}
+<a href="/polls/results/"><i class="fa fa-book"></i> polls results</a>
+
+<script>
+function countdown(){
+    for(let i = 0; i < $(".expirydate").length; i++){
+        let timeleft= Number($(".expirydate").eq(i).attr("timeleft"))
+        $(".expirydate").eq(i).text(`${Math.floor((timeleft / (24 * 3600000))) == 0 ? "" : Math.floor((timeleft / (24 * 3600000))) + " days"}  ${Math.floor((timeleft / (3600000) % 24)) == 0 ? "" : Math.floor((timeleft /(3600000) % 24)) + " hours"}  ${Math.floor((timeleft / 60000) % 60)} min left`)
+    }
+}
+countdown()
+let timeout = setInterval(()=>countdown(), 60000)
+
+</script>
+
+<script src="/static/jquery.waypoints.min.js"></script>
+<script src="/static/infinite.min.js"></script>
+
+<script>
+    var infinite = new Waypoint.Infinite({
+    element: $('.infinite-container')[0],
+    onBeforePageLoad: function () {
+    $('.loading').show();
+    },
+    onAfterPageLoad: function ($items) {
+    $('.loading').hide();
+    }
+});
+</script>
+
+
+{% endblock %}

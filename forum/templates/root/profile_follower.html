@@ -1,0 +1,111 @@
+{% extends "forum/base.html" %}
+{% block title %}Africonn - followers{% endblock %}
+{% load filterdata %}
+{% block content %}
+        {% if followings.paginator.count == 1 %}
+            <p class="reddit-color">{{ followers_name }} is following <b></b>{{ followings.paginator.count }}</b> person </p>
+        {% elif followings.count > 1 %}
+            <p class="reddit-color">{{ followers_name }} is following <b></b>{{ followings.paginator.count }}</b> people</p>
+        {% endif %}
+
+        <div class="infinite-container">
+            <div class="infinite-item">
+                {% for following in followings %}
+                <div class="followpage">    
+                    <!-- if follower is the person don't follow button  -->
+                    {% if user.id != following.following.id %}
+                        <p class="followername"><a href="/profile/{{ following.following.username }}/">{{ following.following.username }}</a></p>
+                        {% if user.is_authenticated %}
+                            {% if your_followings|check_following:following.following.id %}
+                                <button style="color: white" bool="True" data="{{following.following.id }}" class="follow">unfollow</button>
+                            {% else %}
+                                <button style="color: white" bool="False" data="{{following.following.id }}" class="follow followclass">follow</button>
+                            {% endif %}
+                        {% endif %}
+                    {% else %}
+                        <p class="followername">You</p>
+                    {% endif %}
+                </div>
+                {% empty %}
+                    <p> {{ followers_name }} is not following anybody </p>
+                {% endfor %}
+            </div>
+        </div>
+        
+        {% if followings.has_next %}
+        <a class="tweet-this infinite-more-link" href="?category={{category}}&page={{ followings.next_page_number }}">More</a>
+        {% endif %}
+<!--         
+        <div class="tweet-this loading" style="display: none;">
+            Loading...
+        </div> -->
+        
+        <script src="/static/jquery.waypoints.min.js"></script>
+        <script src="/static/infinite.min.js"></script>
+        
+        <script>
+        var infinite = new Waypoint.Infinite({
+        element: $('.infinite-container')[0],
+        onBeforePageLoad: function () {
+        $('.loading').show();
+        },
+        onAfterPageLoad: function ($items) {
+        $('.loading').hide();
+        }
+        });
+        </script>
+        
+
+<script>    
+    $('.follow').click(function(){
+        if($(this).attr("bool") == "False"){
+            let follow_id = Number($(this).attr("data"))
+            let blogBool = $(this).attr("bool")
+            followFunc({blogBool: blogBool, follow_id: follow_id}, "/profile/follow/")
+                $(this).attr("bool", "true")
+            $(this).css("color", "white")
+            $(this).text("unfollow")
+            $(this).removeClass("followclass")
+        }
+        else{
+            let blogBool = $(this).attr("bool")
+            let follow_id = Number($(this).attr("data"))
+            $(this).attr("bool", "False")
+            $(this).css("color", "green")
+            $(this).text("follow")
+            $(this).addClass("followclass")
+            followFunc({blogBool: blogBool, follow_id: follow_id}, "/profile/follow/")
+        }
+    }) 
+    
+    
+    function followFunc(val, Url){
+        let payload = JSON.stringify(val) 
+        let post = $.ajax({
+            url: Url,
+            method: "POST",
+            headers: {"X-CSRFToken": "{{ csrf_token }}"},
+            data: {"data": payload},
+            dataType: "json",
+            success: function(res, status){
+                console.log(res);
+                console.log(status)
+            },
+            
+            fail: function(res){
+                console.log(res.status);
+                // console.log(status)
+            }
+        })
+    
+        post.done(()=>{
+            console.log("success")
+        })
+    
+        post.fail(()=>{
+            // window.location.href = "/forum/home"
+            console.log("fail")
+        })
+    }
+</script>    
+{% endblock %}

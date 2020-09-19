@@ -1,0 +1,93 @@
+{% extends "forum/base.html" %}
+{% block title %}search - {{ keyword }}{% endblock %}
+{% block content %}
+{% load filterdata %}
+<!-- hide the search icon -->
+<style>
+    #search-forum{
+        display: none;
+    }
+</style>
+<form action="/forum/search-forum/"method="POST">
+    {% csrf_token %}
+    <div style="display: flex; justify-content: space-between;">
+        <input type="search" name="search" placeholder="search user, comments, threads...">
+        <button style="border-radius: 50%; background: none; background-color: white; border: 1px black solid; height: 30px; width: 30px"><i style="color: black; position: absolute; margin-left: -6px; margin-top: -6px;" id="searchForum" class="fa fa-search"></i></button>
+    </div>
+</form>
+
+{% for users in search_user %}
+    <div class="threadCard">
+        <div>
+            {% if users.profile.profile_pic %}
+                <img class="usericon" src="{{users.profile.profile_pic.url}}" alt="">
+            {% else %}
+                <div class="default_pic">{{ users.username|default_pic }}</div>
+            {% endif %}
+        </div>
+        <div>
+            <p>{{users.username}}</p>
+            <p><a class="tweet-this" href="/profile/{{users.username}}/">view profile</a></p>
+        </div>
+    </div>
+{% endfor %}
+
+    {% for search in searches|dictsortreversed:"datetime" %}
+        {% if search.comment %}
+            {% with content=thread|getuserdata:search.thread_id%}
+            <div class="threadCard">         
+                <div>
+                    {% if content.user.profile.profile_pic %}
+                        <img class="usericon" src="{{content.user.profile.profile_pic.url}}" alt="">
+                    {% else %}
+                        <div id="authorDefaultImage">{{content.user.username|default_pic}}</div>
+                    {% endif %}
+                </div>                 
+                <div class="usercontent">
+                    <div class="spacing-bottom">
+                        <p>Comment</p>
+                    </div>
+                    <div class="spacing-bottom">
+                    </p><a href="/profile/{{content.user.username}}/" class="contentInfo">{{ content.user.username }} </a><p>           
+                    </div>
+                    <div class="spacing-bottom">
+                        <p><a class="contentTitle" href="/forum/thread/?category={{ content.category }}&slug={{ content.threadSlug }}&thread_no={{ content.id }}#{{search.id}}">{{search.comment}}</a></p>
+                        <span class="contentInfo"><i class="fa fa-clock contentIcon"></i> {{ content.created_at|forumDate }} </span>
+    
+                    </div>
+                </div>
+            </div>
+                    
+            {% endwith %}
+        {% endif %}
+                {% if search.details %}
+                {% with content=thread|getuserdata:search.id%}
+                    <div class="threadCard">
+                            <div>
+                                {% if content.user.profile.profile_pic %}
+                                    <img class="usericon" src="{{content.user.profile.profile_pic.url}}" alt="">
+                                {% else %}
+                                    <div class="default_pic">{{content.user.username|default_pic}}</div>
+                                {% endif %}
+                            </div>     
+                            <div class="usercontent">           
+                                <p>Thread</p>                            
+                                <p style="margin-bottom: 5px;"><a class="contentTitle" href="/forum/thread/?category={{ content.category }}&slug={{ content.threadSlug }}&thread_no={{ content.id }}">{{ content.title }}</a></p>
+                                <span class="contentInfo"><i class="fa fa-heart contentIcon"></i> {{ content.thread_like_set.all|likenum:"True" }}</span>
+                                <span class="contentInfo"><i class="fa fa-angry contentIcon"></i> {{ content.thread_like_set.all|dislikenum:"True" }}</span>
+                                <span class="contentInfo"><i class="fa fa-newspaper contentIcon"></i> {{ content.category }}  </span>
+                                {% if content.created_at|new_threads %}
+                                <span class="new_threads">New!</span>
+                                {% endif %}
+                                
+                                <div class="spacing-bottom">
+                                    <span class="contentInfo"><i class="fa fa-eye contentIcon"></i>  {{content.views}} </span>
+                                    <span class="contentInfo"><i class="fa fa-clock contentIcon"></i> {{ content.created_at|forumDate }} </span>
+                                    <span class="contentInfo"><i class="fa fa-comment contentIcon"></i> {{content.comment_set.all.count}}</span>
+                                </div>
+                            </div>
+                        </div>
+                {% endwith %}
+                {% endif%}
+        {% endfor %}
+{% endblock %}

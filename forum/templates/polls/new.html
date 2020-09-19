@@ -1,0 +1,114 @@
+{% extends "forum/base.html" %}
+{% block title %}active polls {% endblock %}
+{% block content %}
+{% load filterdata %}
+
+{% if hasPost %}
+    {% if user.is_authenticated %}
+        <p class="whatsapp-color">No poll in this category now... be the first to create a poll post</p>
+    {% else %}
+    <p class="reddit-color">No poll in this category now... be the first to create a poll post</p>
+    {% endif %}
+{% endif %}
+
+<div class="infinite-container">
+    <div class="infinite-item">
+        {% for poll in newpolls %}
+        <div class="pollCard">
+            <div class="pollImg">
+                {% if poll.pollImage %}
+                    <img class="pollImage" src="{{poll.pollImage.url}}" alt="">
+                    {% else %}
+                    <img class="pollImage" src="/static/polls.gif" alt="">
+                {% endif %}
+            </div>
+            <div class="pollInfo">
+                <a class="contentTitle spacing" href="/polls/poll/?title={{poll.slugTitle}}&value={{poll.id}}">{{ poll.title }}</a>
+                    {% if fav|GetFavPoll:poll.id == request.user.id  %}
+                        <i style="float: right;" data="{{ poll.id }}" title="{{poll.title}}" bool="true" class="fa fa-star angry-checked fav_poll"></i>
+                        {% else %}
+                        <i style="float: right;" data="{{ poll.id }}" title="{{poll.title}}"  bool="false" class="fa fa-star angry-unchecked fav_poll" ></i>
+                    {% endif %}
+                <p class="expirydate" timeleft="{{poll.expiryDate|pollNewExpiryTime}}" ></p>
+                <div class="spacing-bottom">
+                    <span class="contentInfo"><i class="fa fa-clock contentIcon"></i><i class="fa fa-bag contentIcon"></i> {{ poll.datetime|blogDate }} </span>
+                    <a href="/profile/{{ poll.user.username }}/" class="contentInfo"><i class="fa fa-user contentIcon"></i> {{ poll.user.username }} </a>
+                </div>
+                <br>
+            </div>
+        
+        </div>
+        {% endfor %}           
+    </div>
+</div>
+
+{% if newpolls.has_next %}
+    <a class="infinite-more-link" href="/polls/new/?page={{ newpolls.next_page_number }}">More</a>
+{% endif %}
+
+<div class="loading" style="display: none;">
+    Loading...
+</div>
+
+{% if user.is_authenticated %}
+    <a href="/polls/create/"><i class="fa fa-pen"></i> create polls</a>
+    <a href="/polls/your-polls/"><i class="fa fa-newspaper"></i> your polls</a>
+{% endif %}
+<a href="/polls/results/"><i class="fa fa-book"></i> polls results</a>
+
+<script>
+function countdown(){
+    for(let i = 0; i < $(".expirydate").length; i++){
+        let timeleft= Number($(".expirydate").eq(i).attr("timeleft"))
+        $(".expirydate").eq(i).text(`${Math.floor((timeleft / (24 * 3600000))) == 0 ? "" : Math.floor((timeleft / (24 * 3600000))) + " days"}  ${Math.floor((timeleft / (3600000) % 24)) == 0 ? "" : Math.floor((timeleft /(3600000) % 24)) + " hours"}  ${Math.floor((timeleft / 60000) % 60)} min left`)
+    }
+}
+countdown()
+let timeout = setInterval(()=>countdown(), 60000)
+</script>
+
+<script src="/static/jquery.waypoints.min.js"></script>
+<script src="/static/infinite.min.js"></script>
+
+<script>
+    var infinite = new Waypoint.Infinite({
+    element: $('.infinite-container')[0],
+    onBeforePageLoad: function () {
+    $('.loading').show();
+    },
+    onAfterPageLoad: function ($items) {
+    $('.loading').hide();
+    }
+});
+</script>
+
+
+<script>
+    let fav = $('.fav_poll').length
+    for(let i = 0; i < fav; i++){
+        $('.fav_poll').eq(i).click(function(){
+            if($(this).attr("bool") == "false"){
+                let thread_id = Number($(this).attr("data"))
+                category = "poll"
+                title = $(this).attr("title")
+                let app = "poll"
+                let toggleBool = "True"
+                posts({href: window.location.href, thread_id: thread_id, title, app, category, toggleBool}, "/forum/favourite/")
+                $(this).attr("bool", "true")
+                $(this).css("color", "orange")
+            }
+            else{
+                let thread_id = Number($(this).attr("data"))
+                $(this).attr("bool", "false")
+                $(this).css("color", "transparent")
+                let category = "poll"
+                let title = "{{newpolls.title}}"
+                let app = "poll"
+                let toggleBool = ""
+                posts({href: window.location.href, thread_id: thread_id, title, category, app, toggleBool}, "/forum/favourite/")
+            }
+        }) 
+        
+    } 
+    </script>
+{% endblock %}
